@@ -32,8 +32,5 @@
         </toolWindow>
     </extensions>
     <actions>
-        <action id="legadoreader_index" class="com.nancheung.plugins.jetbrains.legadoreader.action.Index" text="Legado Reader" description="阅读">
-            <add-to-group group-id="ToolsMenu" anchor="first"/>
-        </action>
     </actions>
 </idea-plugin>

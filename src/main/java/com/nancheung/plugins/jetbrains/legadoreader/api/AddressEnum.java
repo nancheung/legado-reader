@@ -15,6 +15,16 @@ public enum AddressEnum {
      * 获取正文内容
      */
     GET_BOOK_CONTENT("/getBookContent"),
+    
+    /**
+     * 获取章节目录
+     */
+    GET_CHAPTER_LIST("/getChapterList"),
+    
+    /**
+     * 保存阅读进度
+     */
+    SAVE_BOOK_PROGRESS("/saveBookProgress"),
     ;
     
     private final String address;
