@@ -14,8 +14,8 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    《开源阅读》的IDE插件版，只为随时随地在IDE中提供阅读体验。<br>
-    <em>编码，并阅读。</em>
+    open source legado app the IDE plug-in version of , only provides reading experience in the IDE anytime and anywhere.<br>
+    <em>Code it, and read it.</em>
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
