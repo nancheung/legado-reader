@@ -25,6 +25,10 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <projectConfigurable id="com.nancheung.legado-reader.setting.id"
+                             groupId="tools" displayName="Legado Reader"
+                             instance="com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory"/>
+
         <toolWindow id="Legado Reader"
                     secondary="true"
                     anchor="right" factoryClass="com.nancheung.plugins.jetbrains.legadoreader.gui.IndexWindowFactory" icon="/META-INF/pluginIcon.svg">

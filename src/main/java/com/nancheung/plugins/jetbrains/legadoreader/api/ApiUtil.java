@@ -24,7 +24,7 @@ public class ApiUtil {
     
     static {
         // 设置超时时间为500ms
-        HttpGlobalConfig.setTimeout(500);
+        HttpGlobalConfig.setTimeout(1000);
     }
     
     /**
@@ -33,7 +33,7 @@ public class ApiUtil {
      * @return 书架目录列表
      */
     public List<BookDTO> getBookshelf() {
-        String url = Data.IP + AddressEnum.GET_BOOKSHELF.getAddress();
+        String url = Data.address + AddressEnum.GET_BOOKSHELF.getAddress();
         String textBody = HttpUtil.get(url);
         R<List<BookDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
@@ -50,7 +50,7 @@ public class ApiUtil {
      */
     public String getBookContent(String bookUrl, int bookIndex) {
         // 调用API获取正文内容
-        String url = Data.IP + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encode(bookUrl + "&index=" + bookIndex);
+        String url = Data.address + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encode(bookUrl + "&index=" + bookIndex);
         
         String textBody = HttpUtil.get(url);
         R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
@@ -68,7 +68,7 @@ public class ApiUtil {
      */
     public List<BookChapterDTO> getChapterList(String bookUrl) {
         // 调用API获取书架目录
-        String url = Data.IP + AddressEnum.GET_CHAPTER_LIST.getAddress() + "?url=" + URLUtil.encode(bookUrl);
+        String url = Data.address + AddressEnum.GET_CHAPTER_LIST.getAddress() + "?url=" + URLUtil.encode(bookUrl);
         
         String textBody = HttpUtil.get(url);
         R<List<BookChapterDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
@@ -84,7 +84,7 @@ public class ApiUtil {
      */
     public void saveBookProgress(String author, String name, int index, String title) {
         // 调用API获取书架目录
-        String url = Data.IP + AddressEnum.SAVE_BOOK_PROGRESS.getAddress();
+        String url = Data.address + AddressEnum.SAVE_BOOK_PROGRESS.getAddress();
         
         BookProgressDTO bookProgressDTO = BookProgressDTO.builder()
                 .author(author)

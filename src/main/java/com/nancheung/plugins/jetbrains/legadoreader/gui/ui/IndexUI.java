@@ -1,10 +1,11 @@
-package com.nancheung.plugins.jetbrains.legadoreader.gui;
+package com.nancheung.plugins.jetbrains.legadoreader.gui.ui;
 
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
+import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
-import lombok.Getter;
+import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -18,11 +19,10 @@ import java.util.Vector;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class IndexWindow {
+public class IndexUI {
     /**
      * 主面板
      */
-    @Getter
     private JPanel rootPanel;
     
     /**
@@ -57,7 +57,7 @@ public class IndexWindow {
     /**
      * 正文面板的标题
      */
-    private JTextField titleField;
+    private JLabel titleLabel;
     /**
      * 正文面板的返回按钮
      */
@@ -93,12 +93,11 @@ public class IndexWindow {
         }
     };
     
-    public IndexWindow() {
+    public IndexUI() {
         // 初始化界面设置
         initIndexUI();
         
         // 初始化使用默认ip刷新书架目录
-        Data.IP = ipTextField.getText();
         refreshBookshelf();
         
         // 刷新书架目录按钮事件
@@ -115,35 +114,36 @@ public class IndexWindow {
     }
     
     private void initIndexUI() {
+        // 初始化设置数据
+        SettingFactory.instance();
+        
         // 隐藏正文面板
         textBodyPanel.hide();
         // 隐藏正文面板的错误提示
         textBodyErrorTipsPane.hide();
-        // 设置正文面板的字体颜色
-        textBodyPane.setForeground(new JBColor(new Color(95, 158, 160), new Color(95,158 ,160)));
         // 设置正文面板的错误提示为不可编辑
         textBodyErrorTipsPane.setEditable(false);
-        // 设置正文面板的标题为不可编辑
-        titleField.setEditable(false);
         
+        // 设置书架面板的ip输入框
+        ipTextField.setText(Data.address);
         // 隐藏书架面板的错误提示
         bookshelfErrorTipsPane.hide();
         // 设置书架面板的错误提示为不可编辑
         bookshelfErrorTipsPane.setEditable(false);
         
         // 设置书架面板的表格数据格式
-        bookshelfTable.setModel(IndexWindow.BOOK_SHELF_TABLE_MODEL);
+        bookshelfTable.setModel(IndexUI.BOOK_SHELF_TABLE_MODEL);
     }
     
     private ActionListener previousChapterActionListener() {
         return e -> {
             // 第一章无法继续上一章
-            if (Data.currentBookIndex < 1) {
+            if (CurrentReadData.getBookIndex() < 1) {
                 return;
             }
             
             // 更新索引
-            Data.currentBookIndex--;
+            CurrentReadData.indexAtomicDecrement();
             
             switchChapter();
         };
@@ -152,7 +152,7 @@ public class IndexWindow {
     private ActionListener nextChapterActionListener() {
         return e -> {
             // 更新索引
-            Data.currentBookIndex++;
+            CurrentReadData.indexAtomicIncrement();
             
             switchChapter();
         };
@@ -169,7 +169,7 @@ public class IndexWindow {
     
     private ActionListener refreshBookshelfActionListener() {
         return e -> {
-            Data.IP = ipTextField.getText();
+            Data.address = ipTextField.getText();
             
             refreshBookshelf();
         };
@@ -190,7 +190,7 @@ public class IndexWindow {
     
     private void setBookshelfUI(List<BookDTO> books) {
         // 清空表格
-        IndexWindow.BOOK_SHELF_TABLE_MODEL.getDataVector().clear();
+        IndexUI.BOOK_SHELF_TABLE_MODEL.getDataVector().clear();
         
         // 添加表格数据
         books.stream().map(book -> {
@@ -200,7 +200,7 @@ public class IndexWindow {
             bookVector.add(book.getLatestChapterTitle());
             bookVector.add(book.getAuthor());
             return bookVector;
-        }).forEach(data -> IndexWindow.BOOK_SHELF_TABLE_MODEL.addRow(data));
+        }).forEach(data -> IndexUI.BOOK_SHELF_TABLE_MODEL.addRow(data));
         
         if (!bookshelfScrollPane.isShowing()) {
             bookshelfScrollPane.show();
@@ -224,11 +224,13 @@ public class IndexWindow {
                 String author = model.getValueAt(row, 3).toString();
                 
                 // 保存当前阅读信息
-                Data.currentBook = Data.getBook(author, name);
-                Data.currentBookIndex = Data.currentBook.getDurChapterIndex();
+                BookDTO book = Data.getBook(author, name);
+                CurrentReadData.setBook(book);
+                CurrentReadData.setBookIndex(book.getDurChapterIndex());
+                
                 // 调用API获取并保存章节列表
                 try {
-                    Data.currentBookChapterList = ApiUtil.getChapterList(Data.currentBook.getBookUrl());
+                    CurrentReadData.setBookChapterList(ApiUtil.getChapterList(CurrentReadData.getBook().getBookUrl()));
                 } catch (Exception e) {
                     showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
                 }
@@ -241,31 +243,34 @@ public class IndexWindow {
         };
     }
     
+    private void switchChapter() {
+        try {
+            BookDTO book = CurrentReadData.getBook();
+            
+            // 调用API获取正文内容
+            String bookContent = ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex());
+            
+            // 获取章节标题
+            String title = CurrentReadData.getBookChapterList().get(CurrentReadData.getBookIndex()).getTitle();
+            
+            // 保存阅读进度
+            ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title);
+            
+            // 设置正文内容
+            setTextBodyUI(book.getName(), title, bookContent);
+        } catch (Exception e) {
+            showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
+        }
+    }
+    
     private void setTextBodyUI(String name, String title, String bookContent) {
-        titleField.setText(name + " - " + title);
+        titleLabel.setText(name + " - " + title);
         textBodyPane.setText(bookContent);
+        textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
         
         if (!textBodyScrollPane.isShowing()) {
             textBodyScrollPane.show();
             textBodyErrorTipsPane.hide();
-        }
-    }
-    
-    private void switchChapter() {
-        try {
-            // 调用API获取正文内容
-            String bookContent = ApiUtil.getBookContent(Data.currentBook.getBookUrl(), Data.currentBookIndex);
-            
-            // 获取章节标题
-            String title = Data.currentBookChapterList.get(Data.currentBookIndex).getTitle();
-            
-            // 保存阅读进度
-            ApiUtil.saveBookProgress(Data.currentBook.getAuthor(), Data.currentBook.getName(), Data.currentBookIndex, title);
-            
-            // 设置正文内容
-            setTextBodyUI(Data.currentBook.getName(), title, bookContent);
-        } catch (Exception e) {
-            showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
         }
     }
     
@@ -274,5 +279,15 @@ public class IndexWindow {
         textBodyErrorTipsPane.show();
     }
     
+    public JComponent getComponent() {
+        return rootPanel;
+    }
     
+    public void setAddress(String address) {
+        ipTextField.setText(address);
+    }
+    
+    public void setTextBodyFontColor(Color color) {
+        textBodyPane.setForeground(new JBColor(color, color));
+    }
 }
