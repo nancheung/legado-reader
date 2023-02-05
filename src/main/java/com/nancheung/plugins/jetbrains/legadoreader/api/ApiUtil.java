@@ -2,6 +2,7 @@ package com.nancheung.plugins.jetbrains.legadoreader.api;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.URLUtil;
+import cn.hutool.http.HttpGlobalConfig;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
@@ -20,6 +21,11 @@ import java.util.List;
  */
 @UtilityClass
 public class ApiUtil {
+    
+    static {
+        // 设置超时时间为500ms
+        HttpGlobalConfig.setTimeout(500);
+    }
     
     /**
      * 获取书架目录列表
@@ -88,7 +94,7 @@ public class ApiUtil {
                 .durChapterTime(System.currentTimeMillis())
                 .durChapterPos(0)
                 .build();
-    
+        
         String textBody = HttpUtil.post(url, JSONUtil.toJsonStr(bookProgressDTO));
         R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
