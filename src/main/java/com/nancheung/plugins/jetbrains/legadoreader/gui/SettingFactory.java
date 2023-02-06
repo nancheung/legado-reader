@@ -2,6 +2,7 @@ package com.nancheung.plugins.jetbrains.legadoreader.gui;
 
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
+import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.ui.IndexUI;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.ui.SettingUI;
@@ -13,14 +14,13 @@ import javax.swing.*;
 
 public class SettingFactory implements SearchableConfigurable {
     
-    private final static String ID = "com.nancheung.legado-reader.setting.id";
     private final static String DISPLAY_NAME = "Legado Reader";
     
     private final static SettingUI SETTING_UI = new SettingUI();
     
     @Override
     public @NotNull String getId() {
-        return SettingFactory.ID;
+        return Constant.PLUGIN__SETTING_ID;
     }
     
     @Override

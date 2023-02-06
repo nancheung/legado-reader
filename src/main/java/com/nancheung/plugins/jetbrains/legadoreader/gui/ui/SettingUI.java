@@ -3,8 +3,9 @@ package com.nancheung.plugins.jetbrains.legadoreader.gui.ui;
 import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.ui.ColorPicker;
-import com.nancheung.plugins.jetbrains.legadoreader.common.ConstantEnum;
+import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,25 +15,31 @@ import java.awt.event.MouseEvent;
 public class SettingUI {
     private JPanel rootPanel;
     
-    private JPanel conventionalPanel;
     private JTextField defaultAddress;
     
-    private JPanel readUiPanel;
-    private JLabel chooseColorLabel;
+    private JLabel textBodyFontColorLabel;
     
     public SettingUI() {
+        // 读取已有配置
         readSettings();
-        saveSettings();
+        // 更新内存数据
+        updateMemoryData();
         
-        chooseColorLabel.addMouseListener(new MouseAdapter() {
+        // 正文字体颜色选择的点击事件
+        textBodyFontColorLabel.addMouseListener(chooseColorMouseListener());
+    }
+    
+    @NotNull
+    private MouseAdapter chooseColorMouseListener() {
+        return new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Color newColor = ColorPicker.showDialog(rootPanel, chooseColorLabel.getText() + " Color", chooseColorLabel.getForeground(), true, null, true);
+                Color newColor = ColorPicker.showDialog(rootPanel, textBodyFontColorLabel.getText() + " Color", textBodyFontColorLabel.getForeground(), true, null, true);
                 if (newColor != null) {
-                    chooseColorLabel.setForeground(newColor);
+                    textBodyFontColorLabel.setForeground(newColor);
                 }
             }
-        });
+        };
     }
     
     public JComponent getComponent() {
@@ -40,8 +47,9 @@ public class SettingUI {
     }
     
     public void readSettings() {
-        String address = PropertiesComponent.getInstance().getValue(ConstantEnum.PLUGIN__SETTING_PREFIX.getValue() + ".address");
-        String textBodyFontColor = PropertiesComponent.getInstance().getValue(ConstantEnum.PLUGIN__SETTING_PREFIX.getValue() + ".textBodyFontColor");
+        // 读取本地配置
+        String address = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__SETTING_PREFIX + ".address");
+        String textBodyFontColor = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor");
         
         if (StrUtil.isNotBlank(address)) {
             defaultAddress.setText(address);
@@ -50,17 +58,23 @@ public class SettingUI {
         if (StrUtil.isNotBlank(textBodyFontColor)) {
             assert textBodyFontColor != null;
             int rgb = Integer.parseInt(textBodyFontColor);
-            chooseColorLabel.setForeground(new Color(rgb));
+            textBodyFontColorLabel.setForeground(new Color(rgb));
         }
     }
     
     
     public void saveSettings() {
-        PropertiesComponent.getInstance().setValue(ConstantEnum.PLUGIN__SETTING_PREFIX.getValue() + ".address", defaultAddress.getText());
-        PropertiesComponent.getInstance().setValue(ConstantEnum.PLUGIN__SETTING_PREFIX.getValue() + ".textBodyFontColor", String.valueOf(chooseColorLabel.getForeground().getRGB()));
+        // 持久化本地配置
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".address", defaultAddress.getText());
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor", String.valueOf(textBodyFontColorLabel.getForeground().getRGB()));
         
+        // 更新内存数据
+        updateMemoryData();
+    }
+    
+    private void updateMemoryData() {
         Data.address = defaultAddress.getText();
-        Data.textBodyFontColor = chooseColorLabel.getForeground();
+        Data.textBodyFontColor = textBodyFontColorLabel.getForeground();
     }
     
     
