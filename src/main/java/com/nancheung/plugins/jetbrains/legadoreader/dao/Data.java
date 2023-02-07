@@ -20,7 +20,8 @@ public class Data {
     public String address;
     
     public Color textBodyFontColor;
-    
+
+    public int textBodyFontSize;
     /**
      * 书架目录
      * key: author +"#"+ name
