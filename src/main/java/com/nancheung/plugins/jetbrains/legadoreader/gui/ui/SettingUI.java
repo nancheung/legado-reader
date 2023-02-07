@@ -18,6 +18,8 @@ public class SettingUI {
     private JTextField defaultAddress;
     
     private JLabel textBodyFontColorLabel;
+
+    private JSpinner textBodyFontSizeSpinner;
     
     public SettingUI() {
         // 读取已有配置
@@ -50,7 +52,8 @@ public class SettingUI {
         // 读取本地配置
         String address = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__SETTING_PREFIX + ".address");
         String textBodyFontColor = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor");
-        
+        int textBodyFontSize = PropertiesComponent.getInstance().getInt(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontSize", 16);
+
         if (StrUtil.isNotBlank(address)) {
             defaultAddress.setText(address);
         }
@@ -60,6 +63,10 @@ public class SettingUI {
             int rgb = Integer.parseInt(textBodyFontColor);
             textBodyFontColorLabel.setForeground(new Color(rgb));
         }
+
+        if (textBodyFontSize > 0) {
+            textBodyFontSizeSpinner.setValue(textBodyFontSize);
+        }
     }
     
     
@@ -67,7 +74,12 @@ public class SettingUI {
         // 持久化本地配置
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".address", defaultAddress.getText());
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor", String.valueOf(textBodyFontColorLabel.getForeground().getRGB()));
-        
+
+        if ((int) textBodyFontSizeSpinner.getValue() <= 0) {
+            textBodyFontSizeSpinner.setValue(16);
+        }
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontSize", String.valueOf(textBodyFontSizeSpinner.getValue()));
+
         // 更新内存数据
         updateMemoryData();
     }
@@ -75,6 +87,7 @@ public class SettingUI {
     private void updateMemoryData() {
         Data.address = defaultAddress.getText();
         Data.textBodyFontColor = textBodyFontColorLabel.getForeground();
+        Data.textBodyFontSize = (int) textBodyFontSizeSpinner.getValue();
     }
     
     

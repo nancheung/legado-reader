@@ -268,7 +268,8 @@ public class IndexUI {
         textBodyPane.setText(bookContent);
         textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
         textBodyPane.setCaretPosition(0);
-        
+        textBodyPane.setFont(new Font("", Font.PLAIN, Data.textBodyFontSize));
+
         if (!textBodyScrollPane.isShowing()) {
             textBodyScrollPane.show();
             textBodyErrorTipsPane.hide();
@@ -290,5 +291,9 @@ public class IndexUI {
     
     public void setTextBodyFontColor(Color color) {
         textBodyPane.setForeground(new JBColor(color, color));
+    }
+
+    public void setTextBodyFontSize(int fontSize) {
+        textBodyPane.setFont(new Font("", Font.PLAIN, fontSize));
     }
 }
