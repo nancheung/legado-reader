@@ -38,7 +38,7 @@ public class ApiUtil {
         R<List<BookDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
         
-        System.out.println(AddressEnum.GET_BOOKSHELF.getAddress() + "：" + r.getIsSuccess());
+        System.out.println(AddressEnum.GET_BOOKSHELF.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
         
         return r.getData();
     }
@@ -50,13 +50,13 @@ public class ApiUtil {
      */
     public String getBookContent(String bookUrl, int bookIndex) {
         // 调用API获取正文内容
-        String url = Data.address + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encode(bookUrl) + "&index=" + bookIndex;
+        String url = Data.address + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encodeAll(bookUrl) + "&index=" + bookIndex;
         
         String textBody = HttpUtil.get(url);
         R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
         
-        System.out.println(AddressEnum.GET_BOOK_CONTENT.getAddress() + "：" + r.getIsSuccess());
+        System.out.println(AddressEnum.GET_BOOK_CONTENT.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
         
         return r.getData();
     }
@@ -68,13 +68,13 @@ public class ApiUtil {
      */
     public List<BookChapterDTO> getChapterList(String bookUrl) {
         // 调用API获取书架目录
-        String url = Data.address + AddressEnum.GET_CHAPTER_LIST.getAddress() + "?url=" + URLUtil.encode(bookUrl);
+        String url = Data.address + AddressEnum.GET_CHAPTER_LIST.getAddress() + "?url=" + URLUtil.encodeAll(bookUrl);
         
         String textBody = HttpUtil.get(url);
         R<List<BookChapterDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
-        
-        System.out.println(AddressEnum.GET_CHAPTER_LIST.getAddress() + "：" + r.getIsSuccess());
+    
+        System.out.println(AddressEnum.GET_CHAPTER_LIST.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
         
         return r.getData();
     }
@@ -99,6 +99,6 @@ public class ApiUtil {
         R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
         
-        System.out.println(AddressEnum.SAVE_BOOK_PROGRESS.getAddress() + "：" + r.getIsSuccess());
+        System.out.println(AddressEnum.SAVE_BOOK_PROGRESS.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
     }
 }
