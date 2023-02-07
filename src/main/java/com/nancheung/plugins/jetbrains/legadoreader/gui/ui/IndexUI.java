@@ -267,6 +267,7 @@ public class IndexUI {
         titleLabel.setText(name + " - " + title);
         textBodyPane.setText(bookContent);
         textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
+        textBodyPane.setCaretPosition(0);
         
         if (!textBodyScrollPane.isShowing()) {
             textBodyScrollPane.show();
