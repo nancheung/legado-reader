@@ -50,7 +50,7 @@ public class ApiUtil {
      */
     public String getBookContent(String bookUrl, int bookIndex) {
         // 调用API获取正文内容
-        String url = Data.address + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encode(bookUrl + "&index=" + bookIndex);
+        String url = Data.address + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encode(bookUrl) + "&index=" + bookIndex;
         
         String textBody = HttpUtil.get(url);
         R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
