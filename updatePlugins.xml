@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugins>
-    <plugin id="cn.xeblog.xechat.plugin" url="https://github.com/nancheung97/legado-reader/releases/download/v1.0.2/legado-reader-1.0.2.zip" version="1.0.2">
+    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung97/legado-reader/releases/download/v1.0.3/legado-reader-1.0.3.zip" version="1.0.3">
         <name>Legado Reader</name>
 
         <description><![CDATA[
@@ -9,6 +9,13 @@
      ]]></description>
 
         <change-notes><![CDATA[
+        <h2>V1.0.3<h2>
+        <h3>BUG修复</h3>
+        <ul>
+          <li>某些书源阅读正文提示异常</li>
+          <li>切换章节时内容自动跳到最后页</li>
+        </ul>
+        <hr>
         <h2>V1.0.2<h2>
         <h3>新特性</h3>
         <ul>
