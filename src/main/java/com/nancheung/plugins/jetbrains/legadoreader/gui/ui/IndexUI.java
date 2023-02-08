@@ -251,7 +251,7 @@ public class IndexUI {
             String bookContent = ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex());
             
             // 获取章节标题
-            String title = CurrentReadData.getBookChapterList().get(CurrentReadData.getBookIndex()).getTitle();
+            String title = CurrentReadData.getBookChapter().getTitle();
             
             // 保存阅读进度
             ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title);
@@ -267,6 +267,7 @@ public class IndexUI {
         titleLabel.setText(name + " - " + title);
         textBodyPane.setText(bookContent);
         textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
+        textBodyPane.setCaretPosition(0);
         
         if (!textBodyScrollPane.isShowing()) {
             textBodyScrollPane.show();

@@ -39,7 +39,7 @@ public class CurrentReadData {
     /**
      * 当前书籍章节内容
      */
-    public BookChapterDTO getBookChapter(int bookIndex) {
+    public BookChapterDTO getBookChapter() {
         return CurrentReadData.bookChapterList.get(bookIndex);
     }
     

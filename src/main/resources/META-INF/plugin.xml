@@ -18,6 +18,30 @@
     <em>Code it, and read it.</em>
   ]]></description>
 
+    <change-notes><![CDATA[
+        <h2>V1.0.2<h2>
+        <h3>新特性</h3>
+        <ul>
+          <li>支持在全局设置中进行默认配置</li>
+          <li>支持默认地址和正文字体颜色的配置，在全局设置中进行设置</li>
+          <li>书架目录可显示列标题</li>
+          <li>书架目录界面可自由缩放和滚动</li>
+        </ul>
+        <h3>体验优化</h3>
+        <ul>
+          <li>阅读界面将上一章与下一章按钮移至左侧</li>
+          <li>调取API的超时时间缩短为1000ms</li>
+        </ul>
+        <hr>
+        **更多说明**
+
+        作者博客：[https://blog.nancheung.com](https://blog.nancheung.com)
+
+        项目地址：[https://github.com/nancheung97/legado-reader](https://github.com/nancheung97/legado-reader)
+
+        [更多版本说明与更新记录](https://github.com/nancheung97/legado-reader/releases)
+]]></change-notes>
+
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
