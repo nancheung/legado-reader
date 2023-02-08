@@ -18,8 +18,12 @@ public class SettingUI {
     private JTextField defaultAddress;
     
     private JLabel textBodyFontColorLabel;
+
+    private JSpinner textBodyFontSizeSpinner;
     
     public SettingUI() {
+        // 正文大小输入范围
+        textBodyFontSizeSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
         // 读取已有配置
         readSettings();
         // 更新内存数据
@@ -50,7 +54,8 @@ public class SettingUI {
         // 读取本地配置
         String address = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__SETTING_PREFIX + ".address");
         String textBodyFontColor = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor");
-        
+        int textBodyFontSize = PropertiesComponent.getInstance().getInt(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontSize", 0);
+
         if (StrUtil.isNotBlank(address)) {
             defaultAddress.setText(address);
         }
@@ -60,6 +65,10 @@ public class SettingUI {
             int rgb = Integer.parseInt(textBodyFontColor);
             textBodyFontColorLabel.setForeground(new Color(rgb));
         }
+
+        if (textBodyFontSize > 0) {
+            textBodyFontSizeSpinner.setValue(textBodyFontSize);
+        }
     }
     
     
@@ -67,7 +76,8 @@ public class SettingUI {
         // 持久化本地配置
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".address", defaultAddress.getText());
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor", String.valueOf(textBodyFontColorLabel.getForeground().getRGB()));
-        
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontSize", String.valueOf(textBodyFontSizeSpinner.getValue()));
+
         // 更新内存数据
         updateMemoryData();
     }
@@ -75,7 +85,10 @@ public class SettingUI {
     private void updateMemoryData() {
         Data.address = defaultAddress.getText();
         Data.textBodyFontColor = textBodyFontColorLabel.getForeground();
+        if ((int)textBodyFontSizeSpinner.getValue() == 0) {
+            Data.textBodyFont=textBodyFontSizeSpinner.getFont();
+        }else {
+            Data.textBodyFont = new Font(textBodyFontSizeSpinner.getFont().getName(), Font.PLAIN, (int) textBodyFontSizeSpinner.getValue());
+        }
     }
-    
-    
 }

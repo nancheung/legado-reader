@@ -21,6 +21,8 @@ public class Data {
     
     public Color textBodyFontColor;
     
+    public Font textBodyFont;
+
     /**
      * 书架目录
      * key: author +"#"+ name

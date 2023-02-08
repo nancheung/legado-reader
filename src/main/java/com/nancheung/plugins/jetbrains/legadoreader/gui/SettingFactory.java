@@ -45,6 +45,7 @@ public class SettingFactory implements SearchableConfigurable {
     
         instance.setAddress(Data.address);
         instance.setTextBodyFontColor(Data.textBodyFontColor);
+        instance.setTextBodyFont(Data.textBodyFont);
     }
     
     public static SettingUI instance() {
