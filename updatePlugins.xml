@@ -9,6 +9,13 @@
      ]]></description>
 
         <change-notes><![CDATA[
+        <h2>V1.0.3<h2>
+        <h3>BUG修复</h3>
+        <ul>
+          <li>某些书源阅读正文提示异常</li>
+          <li>切换章节时内容自动跳到最后页</li>
+        </ul>
+        <hr>
         <h2>V1.0.2<h2>
         <h3>新特性</h3>
         <ul>

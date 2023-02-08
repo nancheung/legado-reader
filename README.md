@@ -1,5 +1,4 @@
-![legado-reader](https://img.shields.io/badge/legado%20reader-v1.0-green.svg)
-![language count](https://img.shields.io/github/languages/count/nancheung97/legado-reader)
+![legado-reader](https://img.shields.io/badge/legado%20reader-v1.0.3-green.svg)
 ![language top](https://img.shields.io/github/languages/top/nancheung97/legado-reader?color=orange)
 ![github stars](https://img.shields.io/github/stars/nancheung97/legado-reader)
 ![platform](https://img.shields.io/badge/platform-JetBrains%20IDE-lightgrey)
@@ -50,12 +49,14 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 1. 阅读章节正文
 1. 切换上下章
 1. 与阅读APP同步进度
+1. 支持自定义字体颜色、大小
+1. 支持全局保存配置；
 
    ……
 
 # 计划：
 1. 在IDE中更多的地方显示正文内容；
-1. 自定义文本颜色；
-1. 全局保存配置；
+1. 支持服务版阅读
+1. 支持更多快捷键
 
    ……
