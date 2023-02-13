@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugins>
-    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung97/legado-reader/releases/download/v1.0.3/legado-reader-1.0.3.zip" version="1.0.3">
+    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung97/legado-reader/releases/download/v1.1/legado-reader-1.1.zip" version="1.1">
         <name>Legado Reader</name>
 
         <description><![CDATA[
@@ -9,6 +9,11 @@
      ]]></description>
 
         <change-notes><![CDATA[
+        <h2>V1.1<h2>
+        <h3>新特性</h3>
+        <ul>
+            <li>支持设置正文默认字体大小</li>
+        </ul>
         <h2>V1.0.3<h2>
         <h3>BUG修复</h3>
         <ul>
@@ -30,13 +35,12 @@
           <li>调取API的超时时间缩短为1000ms</li>
         </ul>
         <hr>
-        **更多说明**
-
-        作者博客：[https://blog.nancheung.com](https://blog.nancheung.com)
-
-        项目地址：[https://github.com/nancheung97/legado-reader](https://github.com/nancheung97/legado-reader)
-
-        [更多版本说明与更新记录](https://github.com/nancheung97/legado-reader/releases)
+        <h3>更多说明</h3>
+        <ul>
+            <li>作者博客：https://blog.nancheung.com</li>
+            <li>项目地址：https://github.com/nancheung97/legado-reader</li>
+            <li>最新版本下载与更新记录：https://github.com/nancheung97/legado-reader/releases</li>
+        </ul>
 ]]></change-notes>
 
         <idea-version since-build="201" until-build="999.*"/>
