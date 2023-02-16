@@ -41,9 +41,18 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 > 3. 打开选择插件包窗口：`⚙齿轮小图标` -> `Install Plugin from Disk...`
 > 4. 选择插件包：`选择下载的插件包` -> `OK`
 
+ 
+# 开始使用
+## 阅读
+> 1. 界面默认在IDE的右侧Tool Windows下边，名字叫`Legado Reader`
+> 2. 在插件首页的文本框中输入阅读APP的web服务地址，点击`刷新`按钮，即可获取到书籍列表。
+> 3. 点击书籍列表中的书籍，即可跳转到阅读界面中阅读书籍。
+
+## 设置
+> 1. 打开插件设置窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Tools` -> `Legado Reader`
+> 2. 可对插件进行默认设置，如：阅读APP的web服务地址、阅读界面的字体大小、阅读界面的字体大小等。
 
 # 已实现功能：
-
 1. 支持在ToolWindow中阅读
 1. 支持查看书架目录
 1. 阅读章节正文
@@ -56,7 +65,8 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 
 # 计划：
 1. 在IDE中更多的地方显示正文内容；
-1. 支持服务版阅读
-1. 支持更多快捷键
+1. 支持服务版阅读;
+1. 支持更多快捷键;
+1. 阅读APP的web服务地址的历史记录;
 
    ……
