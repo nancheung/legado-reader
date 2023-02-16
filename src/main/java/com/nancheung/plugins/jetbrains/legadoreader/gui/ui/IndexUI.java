@@ -248,7 +248,8 @@ public class IndexUI {
             BookDTO book = CurrentReadData.getBook();
             
             // 调用API获取正文内容
-            String bookContent = ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex());
+            String bodyContent = ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex());
+            CurrentReadData.setBodyContent(bodyContent);
             
             // 获取章节标题
             String title = CurrentReadData.getBookChapter().getTitle();
@@ -257,7 +258,7 @@ public class IndexUI {
             ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title);
             
             // 设置正文内容
-            setTextBodyUI(book.getName(), title, bookContent);
+            setTextBodyUI(book.getName(), title, bodyContent);
         } catch (Exception e) {
             showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
         }

@@ -69,7 +69,15 @@
                     anchor="right" factoryClass="com.nancheung.plugins.jetbrains.legadoreader.gui.IndexWindowFactory" icon="/META-INF/pluginIcon.svg">
 
         </toolWindow>
+
+        <editor.linePainter implementation="com.nancheung.plugins.jetbrains.legadoreader.editorline.ReaderEditorLinePainter" />
+
+        <projectService
+                serviceImplementation="com.nancheung.plugins.jetbrains.legadoreader.editorline.ReaderInLineApplicationService"/>
     </extensions>
     <actions>
+        <action id="com.nancheung.legado-reader.inline.id" class="com.nancheung.plugins.jetbrains.legadoreader.action.EditorAction" text="EditorAction" description="获取光标在编辑器上的位置">
+            <add-to-group group-id="EditorActions" anchor="first"/>
+        </action>
     </actions>
 </idea-plugin>
