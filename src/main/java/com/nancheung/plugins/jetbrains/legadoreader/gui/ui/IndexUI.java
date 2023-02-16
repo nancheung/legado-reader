@@ -319,6 +319,8 @@ public class IndexUI {
         // 调用API获取正文内容
         CompletableFuture.supplyAsync(() -> ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex()))
                 .thenAccept(bookContent -> {
+                    CurrentReadData.setBodyContent(bookContent);
+                    
                     // 保存阅读进度
                     ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title);
                     

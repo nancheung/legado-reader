@@ -37,6 +37,13 @@ public class CurrentReadData {
     private int bookIndex;
     
     /**
+     * 当前书籍章节正文内容
+     */
+    @Getter
+    @Setter
+    private String bodyContent;
+    
+    /**
      * 当前书籍章节内容
      */
     public BookChapterDTO getBookChapter() {
