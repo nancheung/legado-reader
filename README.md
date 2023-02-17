@@ -1,10 +1,10 @@
 ![legado-reader](https://img.shields.io/badge/legado%20reader-v1.0.3-green.svg)
-![language top](https://img.shields.io/github/languages/top/nancheung97/legado-reader?color=orange)
-![github stars](https://img.shields.io/github/stars/nancheung97/legado-reader)
+![language top](https://img.shields.io/github/languages/top/nancheung/legado-reader?color=orange)
+![github stars](https://img.shields.io/github/stars/nancheung/legado-reader)
 ![platform](https://img.shields.io/badge/platform-JetBrains%20IDE-lightgrey)
-![license](https://img.shields.io/github/license/nancheung97/legado-reader)
-![GitHub Release Date](https://img.shields.io/github/release-date/nancheung97/legado-reader)
-![GitHub last commit](https://img.shields.io/github/last-commit/nancheung97/legado-reader)
+![license](https://img.shields.io/github/license/nancheung/legado-reader)
+![GitHub Release Date](https://img.shields.io/github/release-date/nancheung/legado-reader)
+![GitHub last commit](https://img.shields.io/github/last-commit/nancheung/legado-reader)
 
 # Legado Reader
 > 编码，并阅读。
@@ -29,14 +29,14 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 > 1. 打开插件市场窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Plugins` -> `Marketplace`
 > 2. 打开管理私服窗口：`⚙齿轮小图标` -> `Manage Plugin Repositories...`
 > 3. 添加私服文件：`+ Add按钮` -> `Add` -> 
->    `https://raw.githubusercontent.com/nancheung97/legado-reader/master/updatePlugins.xml`
+>    `https://raw.githubusercontent.com/nancheung/legado-reader/master/updatePlugins.xml`
 > 4. 安装插件：`Plugins` -> `Marketplace`，搜索：`Legado Reader` 并安装
 > 5. 后续可在插件页面进行更新
 
 ## 方式二：离线安装插件包
 > 1. 下载最新的离线插件包：
 >    1. [蓝奏云(密码：nancheung)](https://nancheung.lanzouw.com/b0674v2sj)
->    2. [GitHub Release](https://github.com/nancheung97/legado-reader/releases)
+>    2. [GitHub Release](https://github.com/nancheung/legado-reader/releases)
 > 2. 打开插件市场窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Plugins` -> `Marketplace`
 > 3. 打开选择插件包窗口：`⚙齿轮小图标` -> `Install Plugin from Disk...`
 > 4. 选择插件包：`选择下载的插件包` -> `OK`

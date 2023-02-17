@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 当前阅读数据
  *
- * @author erqian.zn
+ * @author NanCheung
  */
 @UtilityClass
 public class CurrentReadData {

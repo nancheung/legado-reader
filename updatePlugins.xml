@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugins>
-    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung97/legado-reader/releases/download/v1.1/legado-reader-1.1.zip" version="1.1">
+    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung/legado-reader/releases/download/v1.1/legado-reader-1.1.zip" version="1.1">
         <name>Legado Reader</name>
 
         <description><![CDATA[
@@ -38,8 +38,8 @@
         <h3>更多说明</h3>
         <ul>
             <li>作者博客：https://blog.nancheung.com</li>
-            <li>项目地址：https://github.com/nancheung97/legado-reader</li>
-            <li>最新版本下载与更新记录：https://github.com/nancheung97/legado-reader/releases</li>
+            <li>项目地址：https://github.com/nancheung/legado-reader</li>
+            <li>最新版本下载与更新记录：https://github.com/nancheung/legado-reader/releases</li>
         </ul>
 ]]></change-notes>
 
