@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugins>
-    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung/legado-reader/releases/download/v1.1/legado-reader-1.1.zip" version="1.1">
+    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung/legado-reader/releases/download/v1.1.1/legado-reader-1.1.1.zip" version="1.1.1">
         <name>Legado Reader</name>
 
         <description><![CDATA[
@@ -9,6 +9,11 @@
      ]]></description>
 
         <change-notes><![CDATA[
+        <h2>V1.1.1<h2>
+        <h3>BUG修复</h3>
+        <ul>
+          <li>非暗黑模式下，插件logo大小异常</li>
+        </ul>
         <h2>V1.1<h2>
         <h3>新特性</h3>
         <ul>
