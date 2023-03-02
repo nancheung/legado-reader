@@ -3,7 +3,9 @@ package com.nancheung.plugins.jetbrains.legadoreader.editorline;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.event.EditorMouseEvent;
 import com.intellij.openapi.editor.event.EditorMouseListener;
-import com.nancheung.plugins.jetbrains.legadoreader.action.BodyInLineData;
+import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
+import com.nancheung.plugins.jetbrains.legadoreader.common.ReaderFactory;
+import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
@@ -11,13 +13,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class SwitchLineMouseListener implements EditorMouseListener, Disposable {
-    private final ScheduledExecutorService clickScheduler = Executors.newSingleThreadScheduledExecutor();
+    private static final ScheduledExecutorService clickScheduler = Executors.newSingleThreadScheduledExecutor();
+    
+    private static final  IReader readerAction = ReaderFactory.EDITOR_LINE.getReader();
+    
     private boolean isDoubleClick = false;
     
     @Override
     public void mouseClicked(@NotNull EditorMouseEvent e) {
         // 判断是否启用了行内阅读
-        if (!BodyInLineData.isEnableShowBodyInLine()) {
+        if (!Data.enableShowBodyInLine) {
             return;
         }
         
@@ -39,13 +44,11 @@ public class SwitchLineMouseListener implements EditorMouseListener, Disposable 
     }
     
     private void handleSingleClick(EditorMouseEvent e) {
-        System.out.println("单击下一行");
-        BodyInLineData.nextLine();
+        readerAction.nextPage();
     }
     
     private void handleDoubleClick(EditorMouseEvent e) {
-        System.out.println("双击上一行");
-        BodyInLineData.previousLine();
+        readerAction.previousPage();
     }
     
     @Override

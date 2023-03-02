@@ -33,11 +33,15 @@ public class Data {
     public Font textBodyFont;
     
     /**
+     * 是否启用在代码行中显示正文
+     */
+    public boolean enableShowBodyInLine = true;
+    /**
      * 书架目录
      * key: author +"#"+ name
      * value: 书籍信息
      */
-    public Map<String, BookDTO> bookshelf;
+    private Map<String, BookDTO> bookshelf;
     
     private final BiFunction<String, String, String> BOOK_MAP_KEY_FUNC = (author, name) -> author + "#" + name;
     

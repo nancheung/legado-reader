@@ -1,8 +1,7 @@
-package com.nancheung.plugins.jetbrains.legadoreader.action;
+package com.nancheung.plugins.jetbrains.legadoreader.dao;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,13 +39,6 @@ public class BodyInLineData {
     @Setter
     private int lineMaxLength = 30;
     
-    /**
-     * 是否启用在代码行中显示正文
-     */
-    @Getter
-    @Setter
-    private boolean enableShowBodyInLine = true;
-    
     @Data
     public class LineData {
         /**
@@ -83,36 +75,6 @@ public class BodyInLineData {
         }
         
         return currentLine;
-    }
-    
-    /**
-     * 上一行
-     */
-    public void previousLine() {
-        if (currentLine == null) {
-            return;
-        }
-        
-        int currentLineIndex = currentLine.getLineIndex();
-        
-        if (currentLineIndex > 0) {
-            currentLine = lineContentList.get(currentLineIndex - 1);
-        }
-    }
-    
-    /**
-     * 下一行
-     */
-    public void nextLine() {
-        if (currentLine == null) {
-            return;
-        }
-        
-        int currentLineIndex = currentLine.getLineIndex();
-        
-        if (currentLineIndex < lineContentList.size() - 1) {
-            currentLine = lineContentList.get(currentLineIndex + 1);
-        }
     }
     
     

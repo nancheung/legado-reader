@@ -12,11 +12,22 @@ public interface Constant {
     /**
      * 插件设置id
      */
-    String PLUGIN__SETTING_PREFIX = PLUGIN_ID_PREFIX + ".setting";
+    String PLUGIN_SETTING_ID = PLUGIN_ID_PREFIX + ".setting";
+    
     /**
-     * 插件设置id
+     * action id前缀
      */
-    String PLUGIN__SETTING_ID = PLUGIN__SETTING_PREFIX + ".id";
+    String PLUGIN_ACTION_ID_PREFIX = PLUGIN_ID_PREFIX + ".action";
+    
+    /**
+     * action 上一章id
+     */
+    String PLUGIN_ACTION_PREVIOUS_CHAPTER_ID = PLUGIN_ACTION_ID_PREFIX + ".previousChapter";
+    /**
+     * action 下一章id
+     */
+    String PLUGIN_ACTION_NEXT_CHAPTER_ID = PLUGIN_ACTION_ID_PREFIX + ".nextChapter";
+    
     /**
      * 持久化数据
      */

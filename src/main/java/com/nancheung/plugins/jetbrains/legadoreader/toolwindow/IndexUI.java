@@ -1,11 +1,18 @@
-package com.nancheung.plugins.jetbrains.legadoreader.gui.ui;
+package com.nancheung.plugins.jetbrains.legadoreader.toolwindow;
 
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
+import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
+import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -16,10 +23,10 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
+@Getter
 public class IndexUI {
+    
     /**
      * 主面板
      */
@@ -97,6 +104,8 @@ public class IndexUI {
     
     public static final DefaultComboBoxModel<String> ADDRESS_HISTORY_BOX_MODEL = new DefaultComboBoxModel<>();
     
+    private static final IndexUI INSTANCE = new IndexUI();
+    
     
     public IndexUI() {
         // 初始化界面设置
@@ -148,38 +157,29 @@ public class IndexUI {
     
     private ActionListener previousChapterActionListener() {
         return e -> {
-            // 第一章无法继续上一章
-            if (CurrentReadData.getBookIndex() < 1) {
-                return;
-            }
+            AnAction action = ActionManager.getInstance().getAction(Constant.PLUGIN_ACTION_PREVIOUS_CHAPTER_ID);
             
-            // 设置按钮不可点击，防止多次点击
-            previousChapterButton.setEnabled(false);
+            DataContext dataContext = e.getSource() instanceof Component
+                    ? DataManager.getInstance().getDataContext((Component) e.getSource())
+                    : DataManager.getInstance().getDataContext();
             
-            // 设置加载中的提示
-            titleLabel.setText("加载中...");
-            textBodyPane.setText("加载中...");
+            AnActionEvent event = AnActionEvent.createFromDataContext("", null, dataContext);
             
-            // 更新索引
-            CurrentReadData.indexAtomicDecrement();
-            
-            switchChapter(bookDTOS -> previousChapterButton.setEnabled(true), throwable -> previousChapterButton.setEnabled(true));
+            action.actionPerformed(event);
         };
     }
     
     private ActionListener nextChapterActionListener() {
         return e -> {
-            // 设置按钮不可点击，防止多次点击
-            nextChapterButton.setEnabled(false);
+            AnAction action = ActionManager.getInstance().getAction(Constant.PLUGIN_ACTION_NEXT_CHAPTER_ID);
             
-            // 设置加载中的提示
-            titleLabel.setText("加载中...");
-            textBodyPane.setText("加载中...");
+            DataContext dataContext = e.getSource() instanceof Component
+                    ? DataManager.getInstance().getDataContext((Component) e.getSource())
+                    : DataManager.getInstance().getDataContext();
             
-            // 更新索引
-            CurrentReadData.indexAtomicIncrement();
+            AnActionEvent event = AnActionEvent.createFromDataContext("", null, dataContext);
             
-            switchChapter(bookDTOS -> nextChapterButton.setEnabled(true), throwable -> nextChapterButton.setEnabled(true));
+            action.actionPerformed(event);
         };
     }
     
@@ -222,8 +222,8 @@ public class IndexUI {
         CompletableFuture.supplyAsync(ApiUtil::getBookshelf)
                 .thenAccept(books -> {
                     // 保存书架目录信息
-                    Data.bookshelf = books.stream().collect(Collectors.toMap(book -> book.getAuthor() + "#" + book.getName(), Function.identity()));
-                    
+                    Data.setBookshelf(books);
+                    // 设置书架目录UI
                     setBookshelfUI(books);
                     
                     acceptConsumer.accept(books);
@@ -355,10 +355,6 @@ public class IndexUI {
         textBodyErrorTipsPane.show();
     }
     
-    public JComponent getComponent() {
-        return rootPanel;
-    }
-    
     private void setAddressUI() {
         List<String> addressHistoryList = Data.getAddressHistory();
         // 设置书架面板的ip输入框的历史记录
@@ -378,11 +374,11 @@ public class IndexUI {
         
     }
     
-    public void setTextBodyFontColor(Color color) {
-        textBodyPane.setForeground(new JBColor(color, color));
+    public JComponent getComponent() {
+        return rootPanel;
     }
     
-    public void setTextBodyFont(Font textBodyFont) {
-        textBodyPane.setFont(textBodyFont);
+    public static IndexUI getInstance() {
+        return INSTANCE;
     }
 }

@@ -67,21 +67,25 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable id="com.nancheung.legado-reader.setting.id"
+        <projectConfigurable id="com.nancheung.legado-reader.setting"
                              groupId="tools" displayName="Legado Reader"
                              instance="com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory"/>
 
         <toolWindow id="Legado Reader"
                     secondary="true"
-                    anchor="right" factoryClass="com.nancheung.plugins.jetbrains.legadoreader.gui.IndexWindowFactory" icon="/META-INF/pluginIcon.svg">
+                    anchor="right" factoryClass="com.nancheung.plugins.jetbrains.legadoreader.toolwindow.IndexWindowFactory" icon="/META-INF/pluginIcon.svg">
 
         </toolWindow>
 
         <editor.linePainter implementation="com.nancheung.plugins.jetbrains.legadoreader.editorline.ReaderEditorLinePainter" />
     </extensions>
     <actions>
-        <action id="com.nancheung.legado-reader.inline.id" class="com.nancheung.plugins.jetbrains.legadoreader.action.EditorAction" text="EditorAction" description="获取光标在编辑器上的位置">
-            <add-to-group group-id="EditorActions" anchor="first"/>
+
+        <action id="com.nancheung.legado-reader.action.previousChapter" class="com.nancheung.plugins.jetbrains.legadoreader.action.PreviousChapterAction" text="上一章">
+            <keyboard-shortcut keymap="$default" first-keystroke="shift alt LEFT"/>
+        </action>
+        <action id="com.nancheung.legado-reader.action.nextChapter" class="com.nancheung.plugins.jetbrains.legadoreader.action.NextChapterAction" text="下一章">
+            <keyboard-shortcut keymap="$default" first-keystroke="shift alt RIGHT"/>
         </action>
     </actions>
 </idea-plugin>
