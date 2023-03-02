@@ -78,9 +78,6 @@
         </toolWindow>
 
         <editor.linePainter implementation="com.nancheung.plugins.jetbrains.legadoreader.editorline.ReaderEditorLinePainter" />
-
-        <projectService
-                serviceImplementation="com.nancheung.plugins.jetbrains.legadoreader.editorline.ReaderInLineApplicationService"/>
     </extensions>
     <actions>
         <action id="com.nancheung.legado-reader.inline.id" class="com.nancheung.plugins.jetbrains.legadoreader.action.EditorAction" text="EditorAction" description="获取光标在编辑器上的位置">

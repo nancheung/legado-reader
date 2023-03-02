@@ -89,6 +89,10 @@ public class BodyInLineData {
      * 上一行
      */
     public void previousLine() {
+        if (currentLine == null) {
+            return;
+        }
+        
         int currentLineIndex = currentLine.getLineIndex();
         
         if (currentLineIndex > 0) {
@@ -100,6 +104,10 @@ public class BodyInLineData {
      * 下一行
      */
     public void nextLine() {
+        if (currentLine == null) {
+            return;
+        }
+        
         int currentLineIndex = currentLine.getLineIndex();
         
         if (currentLineIndex < lineContentList.size() - 1) {

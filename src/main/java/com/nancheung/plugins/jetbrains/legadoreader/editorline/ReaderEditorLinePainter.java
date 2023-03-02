@@ -14,9 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 在行内阅读
@@ -24,6 +22,9 @@ import java.util.Optional;
  * @author erqian.zn
  */
 public class ReaderEditorLinePainter extends EditorLinePainter {
+    
+    private static final Set<Editor> EDITORS = new HashSet<>();
+    
     @Override
     public @Nullable Collection<LineExtensionInfo> getLineExtensions(@NotNull Project project, @NotNull VirtualFile file, int lineNumber) {
         // 判断是否启用了行内阅读
@@ -37,10 +38,18 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
         
         // 获取当前编辑器信息
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-        ReaderInLineApplicationService.getInstance(project);
+        if (editor==null) {
+            return null;
+        }
+        
+        // 如果当前编辑器不为空，则向其添加 MouseWheelListener
+        if (!EDITORS.contains(editor)) {
+            editor.addEditorMouseListener(new SwitchLineMouseListener());
+            EDITORS.add(editor);
+        }
         
         // 只有当前光标所在之处才会显示
-        if (editor != null && lineNumber == editor.getCaretModel().getLogicalPosition().line) {
+        if (lineNumber == editor.getCaretModel().getLogicalPosition().line) {
             Optional<BodyInLineData.LineData> currentLineOpt = Optional.ofNullable(BodyInLineData.getCurrentLine());
             
             return currentLineOpt.map(lineData -> String.format("   %s/%s  %s",
@@ -49,9 +58,5 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
         }
         
         return null;
-    }
-    
-    public static ReaderEditorLinePainter getInstance() {
-        return ApplicationManager.getApplication().getService(ReaderEditorLinePainter.class);
     }
 }
