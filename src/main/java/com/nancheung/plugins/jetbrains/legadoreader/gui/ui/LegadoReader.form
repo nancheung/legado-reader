@@ -39,7 +39,7 @@
               <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="请求内容失败，请检查web服务是否开启、url是否正确、网络是否正常？"/>
+              <text value="请求内容失败，请检查web服务是否开启、url是否正确、网络是否正常？&#10;&#10;小提示：可以在File -&gt; Settings -&gt; Tools -&gt; Legado Reader中进行更多设置哦~"/>
             </properties>
           </component>
           <scrollpane id="b527" binding="bookshelfScrollPane">
@@ -109,7 +109,7 @@
               <grid row="2" column="0" row-span="1" col-span="6" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="请求内容失败，请检查web服务是否开启、url是否正确、网络是否正常？"/>
+              <text value="请求内容失败，请检查web服务是否开启、url是否正确、网络是否正常？&#10;&#10;小提示：可以在File -&gt; Settings -&gt; Tools -&gt; Legado Reader中进行更多设置哦~"/>
             </properties>
           </component>
           <component id="85c3c" class="javax.swing.JButton" binding="previousChapterButton">
