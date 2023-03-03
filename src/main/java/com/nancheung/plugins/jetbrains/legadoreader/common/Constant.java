@@ -17,4 +17,8 @@ public interface Constant {
      * 插件设置id
      */
     String PLUGIN__SETTING_ID = PLUGIN__SETTING_PREFIX + ".id";
+    /**
+     * 持久化数据
+     */
+    String PLUGIN__PERSISTENCE_DATA = PLUGIN_ID_PREFIX + ".persistence.data";
 }

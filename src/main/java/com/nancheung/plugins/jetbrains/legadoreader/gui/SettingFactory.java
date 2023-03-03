@@ -39,11 +39,9 @@ public class SettingFactory implements SearchableConfigurable {
     }
     
     @Override
-    public void apply() throws ConfigurationException {
+    public void apply() {
         SETTING_UI.saveSettings();
         IndexUI instance = IndexWindowFactory.instance();
-    
-        instance.setAddress(Data.address);
         instance.setTextBodyFontColor(Data.textBodyFontColor);
         instance.setTextBodyFont(Data.textBodyFont);
     }

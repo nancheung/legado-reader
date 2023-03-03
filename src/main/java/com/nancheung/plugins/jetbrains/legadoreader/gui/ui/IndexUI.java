@@ -11,10 +11,11 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,7 +33,11 @@ public class IndexUI {
     /**
      * 书架面板的ip输入框
      */
-    private JTextField ipTextField;
+    private JTextField addressTextField;
+    /**
+     * 书架面板的ip输入框的历史记录
+     */
+    private JComboBox<String> addressHistoryBox;
     /**
      * 书架面板的刷新按钮
      */
@@ -83,15 +88,16 @@ public class IndexUI {
      */
     private JTextPane textBodyErrorTipsPane;
     
-    private static final String[] BOOK_SHELF_COLUMN_NAME = {"name", "current", "new", "author"};
-    
-    public static DefaultTableModel BOOK_SHELF_TABLE_MODEL = new DefaultTableModel(null, BOOK_SHELF_COLUMN_NAME) {
+    private static final DefaultTableModel BOOK_SHELF_TABLE_MODEL = new DefaultTableModel(null, new String[]{"name", "current", "new", "author"}) {
         @Override
         public boolean isCellEditable(int row, int column) {
             // 表格不允许被编辑
             return false;
         }
     };
+    
+    public static final DefaultComboBoxModel<String> ADDRESS_HISTORY_BOX_MODEL = new DefaultComboBoxModel<>();
+    
     
     public IndexUI() {
         // 初始化界面设置
@@ -111,6 +117,8 @@ public class IndexUI {
         previousChapterButton.addActionListener(previousChapterActionListener());
         // 下一章按钮事件
         nextChapterButton.addActionListener(nextChapterActionListener());
+        // ip输入框的历史记录点击事件
+        addressHistoryBox.addItemListener(selectAddressHistoryItemListener());
     }
     
     private void initIndexUI() {
@@ -124,12 +132,16 @@ public class IndexUI {
         // 设置正文面板的错误提示为不可编辑
         textBodyErrorTipsPane.setEditable(false);
         
-        // 设置书架面板的ip输入框
-        ipTextField.setText(Data.address);
         // 隐藏书架面板的错误提示
         bookshelfErrorTipsPane.hide();
         // 设置书架面板的错误提示为不可编辑
         bookshelfErrorTipsPane.setEditable(false);
+        
+        // 设置书架面板的表格数据格式
+        addressHistoryBox.setModel(ADDRESS_HISTORY_BOX_MODEL);
+    
+        // 设置书架面板的ip输入框及历史记录
+        setAddressUI();
         
         // 设置书架面板的表格数据格式
         bookshelfTable.setModel(IndexUI.BOOK_SHELF_TABLE_MODEL);
@@ -169,9 +181,19 @@ public class IndexUI {
     
     private ActionListener refreshBookshelfActionListener() {
         return e -> {
-            Data.address = ipTextField.getText();
+            Data.addAddress(addressTextField.getText());
+            
+            setAddressUI();
             
             refreshBookshelf();
+        };
+    }
+    
+    private ItemListener selectAddressHistoryItemListener() {
+        return e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                addressTextField.setText(e.getItem().toString());
+            }
         };
     }
     
@@ -200,7 +222,7 @@ public class IndexUI {
             bookVector.add(book.getLatestChapterTitle());
             bookVector.add(book.getAuthor());
             return bookVector;
-        }).forEach(data -> IndexUI.BOOK_SHELF_TABLE_MODEL.addRow(data));
+        }).forEach(IndexUI.BOOK_SHELF_TABLE_MODEL::addRow);
         
         if (!bookshelfScrollPane.isShowing()) {
             bookshelfScrollPane.show();
@@ -285,8 +307,23 @@ public class IndexUI {
         return rootPanel;
     }
     
-    public void setAddress(String address) {
-        ipTextField.setText(address);
+    private void setAddressUI() {
+        List<String> addressHistoryList = Data.getAddressHistory();
+        // 设置书架面板的ip输入框的历史记录
+        ADDRESS_HISTORY_BOX_MODEL.removeAllElements();
+        ADDRESS_HISTORY_BOX_MODEL.addAll(addressHistoryList);
+        
+        if (addressHistoryList.size()==0) {
+            addressHistoryBox.setEnabled(false);
+            ADDRESS_HISTORY_BOX_MODEL.addElement("无历史记录");
+        }
+        
+        // 设置书架面板的ip输入框
+        if (addressHistoryList.size() > 0) {
+            addressHistoryBox.setEnabled(true);
+            ADDRESS_HISTORY_BOX_MODEL.setSelectedItem(addressHistoryList.get(0));
+            addressTextField.setText(addressHistoryList.get(0));
+        }
     }
     
     public void setTextBodyFontColor(Color color) {
