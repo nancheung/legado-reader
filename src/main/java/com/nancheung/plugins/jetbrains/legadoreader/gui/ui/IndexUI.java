@@ -12,11 +12,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -104,7 +103,7 @@ public class IndexUI {
         initIndexUI();
         
         // 初始化使用默认ip刷新书架目录
-        refreshBookshelf();
+        refreshBookshelf(bookDTOS -> refreshBookshelfButton.setEnabled(true), throwable -> refreshBookshelfButton.setEnabled(true));
         
         // 刷新书架目录按钮事件
         refreshBookshelfButton.addActionListener(refreshBookshelfActionListener());
@@ -139,7 +138,7 @@ public class IndexUI {
         
         // 设置书架面板的表格数据格式
         addressHistoryBox.setModel(ADDRESS_HISTORY_BOX_MODEL);
-    
+        
         // 设置书架面板的ip输入框及历史记录
         setAddressUI();
         
@@ -154,25 +153,43 @@ public class IndexUI {
                 return;
             }
             
+            // 设置按钮不可点击，防止多次点击
+            previousChapterButton.setEnabled(false);
+            
+            // 设置加载中的提示
+            titleLabel.setText("加载中...");
+            textBodyPane.setText("加载中...");
+            
             // 更新索引
             CurrentReadData.indexAtomicDecrement();
             
-            switchChapter();
+            switchChapter(bookDTOS -> previousChapterButton.setEnabled(true), throwable -> previousChapterButton.setEnabled(true));
         };
     }
     
     private ActionListener nextChapterActionListener() {
         return e -> {
+            // 设置按钮不可点击，防止多次点击
+            nextChapterButton.setEnabled(false);
+            
+            // 设置加载中的提示
+            titleLabel.setText("加载中...");
+            textBodyPane.setText("加载中...");
+            
             // 更新索引
             CurrentReadData.indexAtomicIncrement();
             
-            switchChapter();
+            switchChapter(bookDTOS -> nextChapterButton.setEnabled(true), throwable -> nextChapterButton.setEnabled(true));
         };
     }
     
     private ActionListener backBookshelfActionListener() {
         return e -> {
-            refreshBookshelf();
+            // 设置按钮不可点击，防止多次点击
+            backButton.setEnabled(false);
+            
+            refreshBookshelf(bookDTOS -> backButton.setEnabled(true), throwable -> backButton.setEnabled(true));
+            
             
             textBodyPanel.hide();
             bookshelfPanel.show();
@@ -181,11 +198,14 @@ public class IndexUI {
     
     private ActionListener refreshBookshelfActionListener() {
         return e -> {
+            // 设置按钮不可点击，防止多次点击
+            refreshBookshelfButton.setEnabled(false);
+            
             Data.addAddress(addressTextField.getText());
             
             setAddressUI();
             
-            refreshBookshelf();
+            refreshBookshelf(bookDTOS -> refreshBookshelfButton.setEnabled(true), throwable -> refreshBookshelfButton.setEnabled(true));
         };
     }
     
@@ -197,17 +217,23 @@ public class IndexUI {
         };
     }
     
-    private void refreshBookshelf() {
-        try {
-            // 调用API获取书架目录
-            List<BookDTO> books = ApiUtil.getBookshelf();
-            // 保存书架目录信息
-            Data.bookshelf = books.stream().collect(Collectors.toMap(book -> book.getAuthor() + "#" + book.getName(), Function.identity()));
-            
-            setBookshelfUI(books);
-        } catch (Exception e) {
-            showErrorTips(bookshelfScrollPane, bookshelfErrorTipsPane);
-        }
+    private void refreshBookshelf(Consumer<List<BookDTO>> acceptConsumer, Consumer<Throwable> throwableConsumer) {
+        // 调用API获取书架目录
+        CompletableFuture.supplyAsync(ApiUtil::getBookshelf)
+                .thenAccept(books -> {
+                    // 保存书架目录信息
+                    Data.bookshelf = books.stream().collect(Collectors.toMap(book -> book.getAuthor() + "#" + book.getName(), Function.identity()));
+                    
+                    setBookshelfUI(books);
+                    
+                    acceptConsumer.accept(books);
+                }).exceptionally(throwable -> {
+                    showErrorTips(bookshelfScrollPane, bookshelfErrorTipsPane);
+                    throwable.printStackTrace();
+                    
+                    throwableConsumer.accept(throwable);
+                    return null;
+                });
     }
     
     private void setBookshelfUI(List<BookDTO> books) {
@@ -250,39 +276,63 @@ public class IndexUI {
                 CurrentReadData.setBook(book);
                 CurrentReadData.setBookIndex(book.getDurChapterIndex());
                 
-                // 调用API获取并保存章节列表
-                try {
-                    CurrentReadData.setBookChapterList(ApiUtil.getChapterList(CurrentReadData.getBook().getBookUrl()));
-                } catch (Exception e) {
-                    showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
-                }
-                
-                switchChapter();
-                
+                // 展示正文面板
                 bookshelfPanel.hide();
                 textBodyPanel.show();
+                
+                // 设置按钮不可点击，防止多次点击
+                previousChapterButton.setEnabled(false);
+                nextChapterButton.setEnabled(false);
+                
+                // 设置加载中的提示
+                titleLabel.setText("加载中...");
+                textBodyPane.setText("加载中...");
+                
+                // 调用API获取章节列表
+                CompletableFuture.supplyAsync(() -> ApiUtil.getChapterList(CurrentReadData.getBook().getBookUrl()))
+                        .thenAccept(bookChapters -> {
+                            // 保存章节列表
+                            CurrentReadData.setBookChapterList(bookChapters);
+                            
+                            switchChapter(bookDTOS -> {
+                                previousChapterButton.setEnabled(true);
+                                nextChapterButton.setEnabled(true);
+                            }, throwable -> {
+                                previousChapterButton.setEnabled(true);
+                                nextChapterButton.setEnabled(true);
+                            });
+                        }).exceptionally(throwable -> {
+                            showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
+                            throwable.printStackTrace();
+                            return null;
+                        });
             }
         };
     }
     
-    private void switchChapter() {
-        try {
-            BookDTO book = CurrentReadData.getBook();
-            
-            // 调用API获取正文内容
-            String bookContent = ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex());
-            
-            // 获取章节标题
-            String title = CurrentReadData.getBookChapter().getTitle();
-            
-            // 保存阅读进度
-            ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title);
-            
-            // 设置正文内容
-            setTextBodyUI(book.getName(), title, bookContent);
-        } catch (Exception e) {
-            showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
-        }
+    private void switchChapter(Consumer<String> acceptConsumer, Consumer<Throwable> throwableConsumer) {
+        BookDTO book = CurrentReadData.getBook();
+        
+        // 获取章节标题
+        String title = CurrentReadData.getBookChapter().getTitle();
+        
+        // 调用API获取正文内容
+        CompletableFuture.supplyAsync(() -> ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex()))
+                .thenAccept(bookContent -> {
+                    // 保存阅读进度
+                    ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title);
+                    
+                    // 设置正文内容
+                    setTextBodyUI(book.getName(), title, bookContent);
+                    
+                    acceptConsumer.accept(bookContent);
+                }).exceptionally(throwable -> {
+                    showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
+                    throwable.printStackTrace();
+                    
+                    throwableConsumer.accept(throwable);
+                    return null;
+                });
     }
     
     private void setTextBodyUI(String name, String title, String bookContent) {
@@ -291,7 +341,7 @@ public class IndexUI {
         textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
         textBodyPane.setCaretPosition(0);
         textBodyPane.setFont(Data.textBodyFont);
-
+        
         if (!textBodyScrollPane.isShowing()) {
             textBodyScrollPane.show();
             textBodyErrorTipsPane.hide();
@@ -313,23 +363,23 @@ public class IndexUI {
         ADDRESS_HISTORY_BOX_MODEL.removeAllElements();
         ADDRESS_HISTORY_BOX_MODEL.addAll(addressHistoryList);
         
-        if (addressHistoryList.size()==0) {
+        if (addressHistoryList.size() == 0) {
             addressHistoryBox.setEnabled(false);
             ADDRESS_HISTORY_BOX_MODEL.addElement("无历史记录");
+            return;
         }
         
         // 设置书架面板的ip输入框
-        if (addressHistoryList.size() > 0) {
-            addressHistoryBox.setEnabled(true);
-            ADDRESS_HISTORY_BOX_MODEL.setSelectedItem(addressHistoryList.get(0));
-            addressTextField.setText(addressHistoryList.get(0));
-        }
+        addressHistoryBox.setEnabled(true);
+        ADDRESS_HISTORY_BOX_MODEL.setSelectedItem(addressHistoryList.get(0));
+        addressTextField.setText(addressHistoryList.get(0));
+        
     }
     
     public void setTextBodyFontColor(Color color) {
         textBodyPane.setForeground(new JBColor(color, color));
     }
-
+    
     public void setTextBodyFont(Font textBodyFont) {
         textBodyPane.setFont(textBodyFont);
     }

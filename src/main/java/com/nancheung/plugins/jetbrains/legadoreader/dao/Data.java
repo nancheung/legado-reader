@@ -7,7 +7,6 @@ import lombok.experimental.UtilityClass;
 
 import java.awt.*;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class Data {
     public Color textBodyFontColor;
     
     public Font textBodyFont;
-
+    
     /**
      * 书架目录
      * key: author +"#"+ name
@@ -48,8 +47,12 @@ public class Data {
         
         if (addressHistoryStr != null) {
             String[] addressHistoryArr = addressHistoryStr.split("\\{nc}");
-            for (String address : addressHistoryArr) {
-                Data.addressHistory.put(address, LocalDateTime.now());
+            for (int i = 0; i < addressHistoryArr.length; i++) {
+                if (i == 0) {
+                    Data.address = addressHistoryArr[i];
+                }
+                
+                Data.addressHistory.put(addressHistoryArr[i], LocalDateTime.now());
             }
         }
     }
