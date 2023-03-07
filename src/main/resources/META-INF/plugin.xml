@@ -19,6 +19,13 @@
   ]]></description>
 
     <change-notes><![CDATA[
+        <h2>V1.2.1<h2>
+        <h3>优化</h3>
+        <ul>
+            <li>异步调用接口请求内容</li>
+            <li>建议更新，极大优化使用体验</li>
+        </ul>
+        <hr>
         <h2>V1.2<h2>
         <h3>新特性</h3>
         <ul>
