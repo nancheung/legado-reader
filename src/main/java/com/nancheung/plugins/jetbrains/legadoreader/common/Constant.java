@@ -29,6 +29,12 @@ public interface Constant {
     String PLUGIN_ACTION_NEXT_CHAPTER_ID = PLUGIN_ACTION_ID_PREFIX + ".nextChapter";
     
     /**
+     * 正文阅读tool bar
+     */
+    String PLUGIN_TOOL_BAR_ID = PLUGIN_ID_PREFIX + ".bar.textBodyToolbar";
+    
+    
+    /**
      * 持久化数据
      */
     String PLUGIN__PERSISTENCE_DATA = PLUGIN_ID_PREFIX + ".persistence.data";

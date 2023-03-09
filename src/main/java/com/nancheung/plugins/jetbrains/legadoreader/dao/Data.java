@@ -35,7 +35,7 @@ public class Data {
     /**
      * 是否启用在代码行中显示正文
      */
-    public boolean enableShowBodyInLine = true;
+    public boolean enableShowBodyInLine = false;
     /**
      * 书架目录
      * key: author +"#"+ name

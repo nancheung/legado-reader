@@ -1,10 +1,8 @@
 package com.nancheung.plugins.jetbrains.legadoreader.toolwindow;
 
-import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
@@ -17,7 +15,6 @@ import lombok.Getter;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 import java.util.Vector;
@@ -66,21 +63,9 @@ public class IndexUI {
      */
     private JPanel textBodyPanel;
     /**
-     * 正文面板的标题
+     * 正文面板的操作按钮bar
      */
-    private JLabel titleLabel;
-    /**
-     * 正文面板的返回按钮
-     */
-    private JButton backButton;
-    /**
-     * 正文面板的下一章按钮
-     */
-    private JButton nextChapterButton;
-    /**
-     * 正文面板的上一章按钮
-     */
-    private JButton previousChapterButton;
+    private JToolBar bar;
     /**
      * 正文面板的滚动面板
      */
@@ -118,15 +103,28 @@ public class IndexUI {
         refreshBookshelfButton.addActionListener(refreshBookshelfActionListener());
         // 表格数据点击事件
         bookshelfTable.addMouseListener(toTextBodyMouseAdapter());
-        // 返回书架按钮事件
-        backButton.addActionListener(backBookshelfActionListener());
         
-        // 上一章按钮事件
-        previousChapterButton.addActionListener(previousChapterActionListener());
-        // 下一章按钮事件
-        nextChapterButton.addActionListener(nextChapterActionListener());
         // ip输入框的历史记录点击事件
         addressHistoryBox.addItemListener(selectAddressHistoryItemListener());
+    }
+    
+    public void refreshBookshelf(Consumer<List<BookDTO>> acceptConsumer, Consumer<Throwable> throwableConsumer) {
+        // 调用API获取书架目录
+        CompletableFuture.supplyAsync(ApiUtil::getBookshelf)
+                .thenAccept(books -> {
+                    // 保存书架目录信息
+                    Data.setBookshelf(books);
+                    // 设置书架目录UI
+                    setBookshelfUI(books);
+                    
+                    acceptConsumer.accept(books);
+                }).exceptionally(throwable -> {
+                    showErrorTips(bookshelfScrollPane, bookshelfErrorTipsPane);
+                    throwable.printStackTrace();
+                    
+                    throwableConsumer.accept(throwable);
+                    return null;
+                });
     }
     
     private void initIndexUI() {
@@ -134,14 +132,12 @@ public class IndexUI {
         SettingFactory.instance();
         
         // 隐藏正文面板
-        textBodyPanel.hide();
+        textBodyPanel.setVisible(false);
         // 隐藏正文面板的错误提示
-        textBodyErrorTipsPane.hide();
-        // 设置正文面板的错误提示为不可编辑
-        textBodyErrorTipsPane.setEditable(false);
+        textBodyErrorTipsPane.setVisible(false);
         
         // 隐藏书架面板的错误提示
-        bookshelfErrorTipsPane.hide();
+        bookshelfErrorTipsPane.setVisible(false);
         // 设置书架面板的错误提示为不可编辑
         bookshelfErrorTipsPane.setEditable(false);
         
@@ -153,47 +149,19 @@ public class IndexUI {
         
         // 设置书架面板的表格数据格式
         bookshelfTable.setModel(IndexUI.BOOK_SHELF_TABLE_MODEL);
-    }
-    
-    private ActionListener previousChapterActionListener() {
-        return e -> {
-            AnAction action = ActionManager.getInstance().getAction(Constant.PLUGIN_ACTION_PREVIOUS_CHAPTER_ID);
-            
-            DataContext dataContext = e.getSource() instanceof Component
-                    ? DataManager.getInstance().getDataContext((Component) e.getSource())
-                    : DataManager.getInstance().getDataContext();
-            
-            AnActionEvent event = AnActionEvent.createFromDataContext("", null, dataContext);
-            
-            action.actionPerformed(event);
-        };
-    }
-    
-    private ActionListener nextChapterActionListener() {
-        return e -> {
-            AnAction action = ActionManager.getInstance().getAction(Constant.PLUGIN_ACTION_NEXT_CHAPTER_ID);
-            
-            DataContext dataContext = e.getSource() instanceof Component
-                    ? DataManager.getInstance().getDataContext((Component) e.getSource())
-                    : DataManager.getInstance().getDataContext();
-            
-            AnActionEvent event = AnActionEvent.createFromDataContext("", null, dataContext);
-            
-            action.actionPerformed(event);
-        };
-    }
-    
-    private ActionListener backBookshelfActionListener() {
-        return e -> {
-            // 设置按钮不可点击，防止多次点击
-            backButton.setEnabled(false);
-            
-            refreshBookshelf(bookDTOS -> backButton.setEnabled(true), throwable -> backButton.setEnabled(true));
-            
-            
-            textBodyPanel.hide();
-            bookshelfPanel.show();
-        };
+        
+        // 设置正文面板的错误提示为不可编辑
+        textBodyErrorTipsPane.setEditable(false);
+        
+        // 创建action bar
+        final ActionManager actionManager = ActionManager.getInstance();
+        ActionToolbar actionToolbar = actionManager.createActionToolbar(Constant.PLUGIN_TOOL_BAR_ID, (DefaultActionGroup) actionManager.getAction(Constant.PLUGIN_TOOL_BAR_ID), true);
+        
+        // 将bar添加至ui
+        bar.add(actionToolbar.getComponent());
+        // 设置bar样式：无边框、不可拖动
+        bar.setBorderPainted(false);
+        bar.setFloatable(false);
     }
     
     private ActionListener refreshBookshelfActionListener() {
@@ -217,45 +185,6 @@ public class IndexUI {
         };
     }
     
-    private void refreshBookshelf(Consumer<List<BookDTO>> acceptConsumer, Consumer<Throwable> throwableConsumer) {
-        // 调用API获取书架目录
-        CompletableFuture.supplyAsync(ApiUtil::getBookshelf)
-                .thenAccept(books -> {
-                    // 保存书架目录信息
-                    Data.setBookshelf(books);
-                    // 设置书架目录UI
-                    setBookshelfUI(books);
-                    
-                    acceptConsumer.accept(books);
-                }).exceptionally(throwable -> {
-                    showErrorTips(bookshelfScrollPane, bookshelfErrorTipsPane);
-                    throwable.printStackTrace();
-                    
-                    throwableConsumer.accept(throwable);
-                    return null;
-                });
-    }
-    
-    private void setBookshelfUI(List<BookDTO> books) {
-        // 清空表格
-        IndexUI.BOOK_SHELF_TABLE_MODEL.getDataVector().clear();
-        
-        // 添加表格数据
-        books.stream().map(book -> {
-            Vector<String> bookVector = new Vector<>();
-            bookVector.add(book.getName());
-            bookVector.add(book.getDurChapterTitle());
-            bookVector.add(book.getLatestChapterTitle());
-            bookVector.add(book.getAuthor());
-            return bookVector;
-        }).forEach(IndexUI.BOOK_SHELF_TABLE_MODEL::addRow);
-        
-        if (!bookshelfScrollPane.isShowing()) {
-            bookshelfScrollPane.show();
-            bookshelfErrorTipsPane.hide();
-        }
-    }
-    
     private MouseAdapter toTextBodyMouseAdapter() {
         return new MouseAdapter() {
             @Override
@@ -277,15 +206,10 @@ public class IndexUI {
                 CurrentReadData.setBookIndex(book.getDurChapterIndex());
                 
                 // 展示正文面板
-                bookshelfPanel.hide();
-                textBodyPanel.show();
-                
-                // 设置按钮不可点击，防止多次点击
-                previousChapterButton.setEnabled(false);
-                nextChapterButton.setEnabled(false);
+                bookshelfPanel.setVisible(false);
+                textBodyPanel.setVisible(true);
                 
                 // 设置加载中的提示
-                titleLabel.setText("加载中...");
                 textBodyPane.setText("加载中...");
                 
                 // 调用API获取章节列表
@@ -294,13 +218,7 @@ public class IndexUI {
                             // 保存章节列表
                             CurrentReadData.setBookChapterList(bookChapters);
                             
-                            switchChapter(bookDTOS -> {
-                                previousChapterButton.setEnabled(true);
-                                nextChapterButton.setEnabled(true);
-                            }, throwable -> {
-                                previousChapterButton.setEnabled(true);
-                                nextChapterButton.setEnabled(true);
-                            });
+                            switchChapter(book.getDurChapterPos());
                         }).exceptionally(throwable -> {
                             showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
                             throwable.printStackTrace();
@@ -310,7 +228,32 @@ public class IndexUI {
         };
     }
     
-    private void switchChapter(Consumer<String> acceptConsumer, Consumer<Throwable> throwableConsumer) {
+    private void setBookshelfUI(List<BookDTO> books) {
+        // 清空表格
+        IndexUI.BOOK_SHELF_TABLE_MODEL.getDataVector().clear();
+        
+        // 添加表格数据
+        books.stream().map(book -> {
+            Vector<String> bookVector = new Vector<>();
+            bookVector.add(book.getName());
+            bookVector.add(book.getDurChapterTitle());
+            bookVector.add(book.getLatestChapterTitle());
+            bookVector.add(book.getAuthor());
+            return bookVector;
+        }).forEach(IndexUI.BOOK_SHELF_TABLE_MODEL::addRow);
+        
+        if (!bookshelfScrollPane.isShowing()) {
+            bookshelfScrollPane.setVisible(true);
+            bookshelfErrorTipsPane.setVisible(false);
+        }
+    }
+    
+    /**
+     * 切换章节
+     *
+     * @param durChapterPos 当前在章节中的位置
+     */
+    public void switchChapter(int durChapterPos) {
         BookDTO book = CurrentReadData.getBook();
         
         // 获取章节标题
@@ -322,37 +265,33 @@ public class IndexUI {
                     CurrentReadData.setBodyContent(bookContent);
                     
                     // 保存阅读进度
-                    ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title);
+                    ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title, durChapterPos);
                     
                     // 设置正文内容
-                    setTextBodyUI(book.getName(), title, bookContent);
-                    
-                    acceptConsumer.accept(bookContent);
+                    setTextBodyUI(book.getName(), title, bookContent, durChapterPos);
                 }).exceptionally(throwable -> {
                     showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
                     throwable.printStackTrace();
-                    
-                    throwableConsumer.accept(throwable);
                     return null;
                 });
     }
     
-    private void setTextBodyUI(String name, String title, String bookContent) {
-        titleLabel.setText(name + " - " + title);
-        textBodyPane.setText(bookContent);
+    private void setTextBodyUI(String name, String title, String bookContent, int durChapterPos) {
+        bar.setToolTipText(name + " - " + title);
+        textBodyPane.setText(title + "\n" + bookContent);
+        textBodyPane.setCaretPosition(durChapterPos);
         textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
-        textBodyPane.setCaretPosition(0);
         textBodyPane.setFont(Data.textBodyFont);
         
         if (!textBodyScrollPane.isShowing()) {
-            textBodyScrollPane.show();
-            textBodyErrorTipsPane.hide();
+            textBodyScrollPane.setVisible(true);
+            textBodyErrorTipsPane.setVisible(false);
         }
     }
     
     private void showErrorTips(JScrollPane textBodyScrollPane, JTextPane textBodyErrorTipsPane) {
-        textBodyScrollPane.hide();
-        textBodyErrorTipsPane.show();
+        textBodyScrollPane.setVisible(false);
+        textBodyErrorTipsPane.setVisible(true);
     }
     
     private void setAddressUI() {
