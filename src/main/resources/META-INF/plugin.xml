@@ -19,6 +19,17 @@
   ]]></description>
 
     <change-notes><![CDATA[
+        <h2>V1.3<h2>
+        <h3>特性</h3>
+        <ul>
+            <li>支持快捷键：切换上下章（shift+alt+LEFT/RIGHT）可自己在设置中定义</li>
+            <li>UI更新：阅读页的按钮转为图标按钮</li>
+        </ul>
+        <h3>BUG修复</h3>
+        <ul>
+            <li>随着切换章节，插件界面会变得越来越宽(github #4)</li>
+        </ul>
+        <hr>
         <h2>V1.2.1<h2>
         <h3>优化</h3>
         <ul>

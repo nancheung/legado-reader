@@ -9,7 +9,7 @@ dependencies {
 }
 
 group = "com.nancheung.plugins.jetbrains"
-version = "1.2.1"
+version = "1.3"
 
 repositories {
     mavenCentral()
