@@ -76,7 +76,7 @@ public class ApiUtil {
     /**
      * 保存阅读进度
      */
-    public void saveBookProgress(String author, String name, int index, String title) {
+    public void saveBookProgress(String author, String name, int index, String title,int durChapterPos) {
         // 调用API获取书架目录
         String url = Data.getAddress() + AddressEnum.SAVE_BOOK_PROGRESS.getAddress();
         
@@ -86,7 +86,7 @@ public class ApiUtil {
                 .durChapterIndex(index)
                 .durChapterTitle(title)
                 .durChapterTime(System.currentTimeMillis())
-                .durChapterPos(0)
+                .durChapterPos(durChapterPos)
                 .build();
         
         String textBody = HttpUtil.post(url, JSONUtil.toJsonStr(bookProgressDTO));

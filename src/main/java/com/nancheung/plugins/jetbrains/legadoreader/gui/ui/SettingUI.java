@@ -51,8 +51,8 @@ public class SettingUI {
     
     public void readSettings() {
         // 读取本地配置
-        String textBodyFontColor = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor");
-        int textBodyFontSize = PropertiesComponent.getInstance().getInt(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontSize", 0);
+        String textBodyFontColor = PropertiesComponent.getInstance().getValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontColor");
+        int textBodyFontSize = PropertiesComponent.getInstance().getInt(Constant.PLUGIN_SETTING_ID + ".textBodyFontSize", 0);
         
         if (StrUtil.isNotBlank(textBodyFontColor)) {
             assert textBodyFontColor != null;
@@ -68,8 +68,8 @@ public class SettingUI {
     
     public void saveSettings() {
         // 持久化本地配置
-        PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontColor", String.valueOf(textBodyFontColorLabel.getForeground().getRGB()));
-        PropertiesComponent.getInstance().setValue(Constant.PLUGIN__SETTING_PREFIX + ".textBodyFontSize", String.valueOf(textBodyFontSizeSpinner.getValue()));
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontColor", String.valueOf(textBodyFontColorLabel.getForeground().getRGB()));
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontSize", String.valueOf(textBodyFontSizeSpinner.getValue()));
 
         // 更新内存数据
         updateMemoryData();
