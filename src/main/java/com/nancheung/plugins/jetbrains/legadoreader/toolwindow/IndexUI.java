@@ -195,22 +195,19 @@ public class IndexUI {
                 if (row < 0 || col < 0) {
                     return;
                 }
-                
+
+                // 展示正文面板
+                bookshelfPanel.setVisible(false);
+                textBodyPanel.setVisible(true);
+    
                 TableModel model = ((JTable) evt.getSource()).getModel();
                 String name = model.getValueAt(row, 0).toString();
                 String author = model.getValueAt(row, 3).toString();
-                
+    
                 // 保存当前阅读信息
                 BookDTO book = Data.getBook(author, name);
                 CurrentReadData.setBook(book);
                 CurrentReadData.setBookIndex(book.getDurChapterIndex());
-                
-                // 展示正文面板
-                bookshelfPanel.setVisible(false);
-                textBodyPanel.setVisible(true);
-                
-                // 设置加载中的提示
-                textBodyPane.setText("加载中...");
                 
                 // 调用API获取章节列表
                 CompletableFuture.supplyAsync(() -> ApiUtil.getChapterList(CurrentReadData.getBook().getBookUrl()))
@@ -254,6 +251,12 @@ public class IndexUI {
      * @param durChapterPos 当前在章节中的位置
      */
     public void switchChapter(int durChapterPos) {
+        // 设置正文面板UI
+        setTextBodyUI();
+        
+        // 设置加载中的提示
+        textBodyPane.setText("加载中...");
+        
         BookDTO book = CurrentReadData.getBook();
         
         // 获取章节标题
@@ -268,7 +271,7 @@ public class IndexUI {
                     ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title, durChapterPos);
                     
                     // 设置正文内容
-                    setTextBodyUI(book.getName(), title, bookContent, durChapterPos);
+                    setTextBodyUIData(title, bookContent, durChapterPos);
                 }).exceptionally(throwable -> {
                     showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
                     throwable.printStackTrace();
@@ -276,10 +279,7 @@ public class IndexUI {
                 });
     }
     
-    private void setTextBodyUI(String name, String title, String bookContent, int durChapterPos) {
-        bar.setToolTipText(name + " - " + title);
-        textBodyPane.setText(title + "\n" + bookContent);
-        textBodyPane.setCaretPosition(durChapterPos);
+    private void setTextBodyUI() {
         textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
         textBodyPane.setFont(Data.textBodyFont);
         
@@ -287,6 +287,14 @@ public class IndexUI {
             textBodyScrollPane.setVisible(true);
             textBodyErrorTipsPane.setVisible(false);
         }
+    
+        // 获取焦点到文本框
+        textBodyPane.requestFocus();
+    }
+    
+    private void setTextBodyUIData(String title, String bookContent, int durChapterPos) {
+        textBodyPane.setText(title + "\n" + bookContent);
+        textBodyPane.setCaretPosition(durChapterPos);
     }
     
     private void showErrorTips(JScrollPane textBodyScrollPane, JTextPane textBodyErrorTipsPane) {

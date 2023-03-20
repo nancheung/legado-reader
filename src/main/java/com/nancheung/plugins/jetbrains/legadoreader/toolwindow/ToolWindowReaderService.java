@@ -23,9 +23,6 @@ public class ToolWindowReaderService implements IReader {
             return;
         }
         
-        // 设置加载中效果
-        loading();
-        
         // 更新索引
         CurrentReadData.indexAtomicDecrement();
         
@@ -35,9 +32,6 @@ public class ToolWindowReaderService implements IReader {
     
     @Override
     public void nextChapter() {
-        // 设置加载中效果
-        loading();
-        
         // 更新索引
         CurrentReadData.indexAtomicIncrement();
         
@@ -56,10 +50,5 @@ public class ToolWindowReaderService implements IReader {
         
         indexUI.getTextBodyPanel().setVisible(false);
         indexUI.getBookshelfPanel().setVisible(true);
-    }
-    
-    private void loading() {
-        // 设置加载中的提示
-        indexUI.getTextBodyPane().setText("加载中...");
     }
 }
