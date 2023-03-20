@@ -19,6 +19,7 @@ public class SettingUI {
     private JLabel textBodyFontColorLabel;
 
     private JSpinner textBodyFontSizeSpinner;
+    private JTextArea apiCustomParamTextArea;
     
     public SettingUI() {
         // 正文大小输入范围
@@ -53,6 +54,7 @@ public class SettingUI {
         // 读取本地配置
         String textBodyFontColor = PropertiesComponent.getInstance().getValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontColor");
         int textBodyFontSize = PropertiesComponent.getInstance().getInt(Constant.PLUGIN_SETTING_ID + ".textBodyFontSize", 0);
+        String customParam = PropertiesComponent.getInstance().getValue(Constant.PLUGIN_SETTING_ID + ".apiCustomParam");
         
         if (StrUtil.isNotBlank(textBodyFontColor)) {
             assert textBodyFontColor != null;
@@ -63,16 +65,21 @@ public class SettingUI {
         if (textBodyFontSize > 0) {
             textBodyFontSizeSpinner.setValue(textBodyFontSize);
         }
+    
+        if (StrUtil.isNotBlank(customParam)) {
+            apiCustomParamTextArea.setText(customParam);
+        }
     }
     
     
     public void saveSettings() {
+        // 更新内存数据
+        updateMemoryData();
+        
         // 持久化本地配置
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontColor", String.valueOf(textBodyFontColorLabel.getForeground().getRGB()));
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontSize", String.valueOf(textBodyFontSizeSpinner.getValue()));
-
-        // 更新内存数据
-        updateMemoryData();
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".apiCustomParam", String.valueOf(apiCustomParamTextArea.getText()));
     }
     
     private void updateMemoryData() {
@@ -82,5 +89,7 @@ public class SettingUI {
         }else {
             Data.textBodyFont = new Font(textBodyFontSizeSpinner.getFont().getName(), Font.PLAIN, (int) textBodyFontSizeSpinner.getValue());
         }
+    
+        Data.setApiCustomParam(apiCustomParamTextArea.getText());
     }
 }

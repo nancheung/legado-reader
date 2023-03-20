@@ -2,12 +2,14 @@ package com.nancheung.plugins.jetbrains.legadoreader.api;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.URLUtil;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookProgressDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.R;
+import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import lombok.experimental.UtilityClass;
 
@@ -28,7 +30,7 @@ public class ApiUtil {
      */
     public List<BookDTO> getBookshelf() {
         String url = Data.getAddress() + AddressEnum.GET_BOOKSHELF.getAddress();
-        String textBody = HttpUtil.get(url);
+        String textBody = HttpUtil.get(url,Data.apiCustomParam);
         R<List<BookDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
         
@@ -46,7 +48,7 @@ public class ApiUtil {
         // 调用API获取正文内容
         String url = Data.getAddress() + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encodeAll(bookUrl) + "&index=" + bookIndex;
         
-        String textBody = HttpUtil.get(url);
+        String textBody = HttpUtil.get(url,Data.apiCustomParam);
         R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
         
@@ -64,7 +66,7 @@ public class ApiUtil {
         // 调用API获取书架目录
         String url = Data.getAddress() + AddressEnum.GET_CHAPTER_LIST.getAddress() + "?url=" + URLUtil.encodeAll(bookUrl);
         
-        String textBody = HttpUtil.get(url);
+        String textBody = HttpUtil.get(url,Data.apiCustomParam);
         R<List<BookChapterDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
         
@@ -76,7 +78,7 @@ public class ApiUtil {
     /**
      * 保存阅读进度
      */
-    public void saveBookProgress(String author, String name, int index, String title,int durChapterPos) {
+    public void saveBookProgress(String author, String name, int index, String title, int durChapterPos) {
         // 调用API获取书架目录
         String url = Data.getAddress() + AddressEnum.SAVE_BOOK_PROGRESS.getAddress();
         
@@ -87,9 +89,19 @@ public class ApiUtil {
                 .durChapterTitle(title)
                 .durChapterTime(System.currentTimeMillis())
                 .durChapterPos(durChapterPos)
+                .url(CurrentReadData.getBook().getBookUrl())
+                .index(index)
                 .build();
+    
+    
+        String textBody;
+        try (HttpResponse execute = HttpUtil.createPost(url)
+                .form(Data.apiCustomParam)
+                .body(JSONUtil.toJsonStr(bookProgressDTO))
+                .execute()) {
+            textBody = execute.body();
+        }
         
-        String textBody = HttpUtil.post(url, JSONUtil.toJsonStr(bookProgressDTO));
         R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
         }, true);
         

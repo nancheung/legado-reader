@@ -1,5 +1,7 @@
 package com.nancheung.plugins.jetbrains.legadoreader.dao;
 
+import cn.hutool.core.text.StrPool;
+import cn.hutool.core.util.StrUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
@@ -27,6 +29,12 @@ public class Data {
      * 历史address
      */
     private Map<String, LocalDateTime> addressHistory = new LinkedHashMap<>(4);
+    
+    /**
+     * API自定义参数
+     */
+    public Map<String, Object> apiCustomParam;
+    
     
     public Color textBodyFontColor;
     
@@ -58,6 +66,12 @@ public class Data {
                 
                 Data.addressHistory.put(addressHistoryArr[i], LocalDateTime.now());
             }
+        }
+        
+        // 从本地读取API自定义参数
+        String apiCustomParamStr = PropertiesComponent.getInstance().getValue(Constant.PLUGIN_SETTING_ID + ".apiCustomParam");
+        if (StrUtil.isNotBlank(apiCustomParamStr)) {
+            setApiCustomParam(apiCustomParamStr);
         }
     }
     
@@ -93,5 +107,25 @@ public class Data {
     
     public void setBookshelf(List<BookDTO> books) {
         Data.bookshelf = books.stream().collect(Collectors.toMap(book -> BOOK_MAP_KEY_FUNC.apply(book.getAuthor(), book.getName()), Function.identity()));
+    }
+    
+    public Map<String, Object> setApiCustomParam(String apiCustomParam) {
+        if (StrUtil.isBlank(apiCustomParam)) {
+            return Map.of();
+        }
+        
+        // 按照回车符分割，取出所有自定义参数
+        List<String> apiCustomParamList = StrUtil.split(apiCustomParam, "\n");
+    
+        Map<String, Object> map = apiCustomParamList.stream()
+                .filter(StrUtil::isNotEmpty)
+                .filter(s -> s.contains(StrPool.COLON + StrPool.AT))
+                .map(s -> StrUtil.split(s, StrPool.COLON + StrPool.AT))
+                .collect(Collectors.toMap(l -> l.get(0), l -> l.get(1), (a, b) -> b));
+    
+        Data.apiCustomParam = map;
+        
+        return map;
+        
     }
 }

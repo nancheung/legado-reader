@@ -29,4 +29,15 @@ public class BookProgressDTO {
     private Long durChapterTime;
     @JsonProperty("durChapterTitle")
     private String durChapterTitle;
+    /**
+     * 书籍url，服务器版需要
+     */
+    @JsonProperty("url")
+    private String url;
+    /**
+     * 同durChapterIndex，服务器版需要
+     */
+    @JsonProperty("index")
+    private Integer index;
+    
 }
