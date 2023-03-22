@@ -52,6 +52,15 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 > 1. 打开插件设置窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Tools` -> `Legado Reader`
 > 2. 可对插件进行默认设置，如：阅读APP的web服务地址、阅读界面的字体大小、阅读界面的字体大小等。
 
+## 使用服务器版阅读([hectorqin/reader](https://github.com/hectorqin/reader))
+> 1. 获取账号token
+>    > 打开服务器版阅读的web页面，登录成功后，在书架页面，开发者工具的控制台中输入：`"accessToken:@"+localStorage.api_token`
+> 2. 打开插件设置窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Tools` -> `Legado Reader`
+> 3. 在`自定义请求参数`中输入：上一步获取到的值，如：`accessToken:@test:f839648a6de240f839648a6de240`
+> 4. 获取当前服务器api地址
+>    > 打开服务器版阅读的web页面，登录成功后，在书架页面，开发者工具的控制台中输入：`document.location.protocol+"//"+document.location.host+"/reader3"`
+> 5. 在插件首页的地址框中输入api地址，点击`刷新`按钮，即可获取到书籍列表。  
+
 # 已实现功能：
 1. 支持在ToolWindow中阅读
 1. 支持查看书架目录
@@ -60,13 +69,12 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 1. 与阅读APP同步进度
 1. 支持自定义字体颜色、大小
 1. 支持全局保存配置；
-
+1. 支持服务版阅读;
+1. 阅读APP的web服务地址的历史记录;
    ……
 
 # 计划：
 1. 在IDE中更多的地方显示正文内容；
-1. 支持服务版阅读;
 1. 支持更多快捷键;
-1. 阅读APP的web服务地址的历史记录;
 
    ……
