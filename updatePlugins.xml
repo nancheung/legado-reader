@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugins>
-    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung/legado-reader/releases/download/v1.4/legado-reader-1.4.zip" version="1.4">
+    <plugin id="com.nancheung.plugins.jetbrains.legado-reader" url="https://github.com/nancheung/legado-reader/releases/download/v1.4.1/legado-reader-1.4.1.zip" version="1.4.1">
         <name>Legado Reader</name>
 
         <description><![CDATA[
@@ -9,6 +9,16 @@
      ]]></description>
 
         <change-notes><![CDATA[
+        <h2>V1.4.1<h2>
+        <h3>特性</h3>
+        <ul>
+            <li>新增开启异常日志的开关</li>
+        </ul>
+        <h3>优化</h3>
+        <ul>
+            <li>优化切换章节时的加载中提示</li>
+        </ul>
+        <hr>
         <h2>V1.4<h2>
         <h3>特性</h3>
         <ul>
@@ -40,18 +50,6 @@
         <ul>
             <li>支持快捷切换阅读的历史地址</li>
             <li>在某些地方添加一些引导设置提示语</li>
-        </ul>
-        <hr>
-        <h2>V1.1.1<h2>
-        <h3>BUG修复</h3>
-        <ul>
-          <li>非暗黑模式下，插件logo大小异常</li>
-        </ul>
-        <hr>
-        <h2>V1.1<h2>
-        <h3>新特性</h3>
-        <ul>
-            <li>支持设置正文默认字体大小</li>
         </ul>
         <hr>
         <h3>更多说明</h3>
