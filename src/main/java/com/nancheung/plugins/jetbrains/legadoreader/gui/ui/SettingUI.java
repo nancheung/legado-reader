@@ -20,7 +20,8 @@ public class SettingUI {
 
     private JSpinner textBodyFontSizeSpinner;
     private JTextArea apiCustomParamTextArea;
-    
+    private JCheckBox enableErrorLogCheckBox;
+
     public SettingUI() {
         // 正文大小输入范围
         textBodyFontSizeSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
@@ -55,7 +56,8 @@ public class SettingUI {
         String textBodyFontColor = PropertiesComponent.getInstance().getValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontColor");
         int textBodyFontSize = PropertiesComponent.getInstance().getInt(Constant.PLUGIN_SETTING_ID + ".textBodyFontSize", 0);
         String customParam = PropertiesComponent.getInstance().getValue(Constant.PLUGIN_SETTING_ID + ".apiCustomParam");
-        
+        boolean enableErrorLog = PropertiesComponent.getInstance().getBoolean(Constant.PLUGIN_SETTING_ID + ".enableErrorLog", false);
+
         if (StrUtil.isNotBlank(textBodyFontColor)) {
             assert textBodyFontColor != null;
             int rgb = Integer.parseInt(textBodyFontColor);
@@ -69,6 +71,8 @@ public class SettingUI {
         if (StrUtil.isNotBlank(customParam)) {
             apiCustomParamTextArea.setText(customParam);
         }
+
+        enableErrorLogCheckBox.setSelected(enableErrorLog);
     }
     
     
@@ -80,6 +84,7 @@ public class SettingUI {
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontColor", String.valueOf(textBodyFontColorLabel.getForeground().getRGB()));
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".textBodyFontSize", String.valueOf(textBodyFontSizeSpinner.getValue()));
         PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".apiCustomParam", String.valueOf(apiCustomParamTextArea.getText()));
+        PropertiesComponent.getInstance().setValue(Constant.PLUGIN_SETTING_ID + ".enableErrorLog", enableErrorLogCheckBox.isSelected());
     }
     
     private void updateMemoryData() {
@@ -91,5 +96,6 @@ public class SettingUI {
         }
     
         Data.setApiCustomParam(apiCustomParamTextArea.getText());
+        Data.enableErrorLog = enableErrorLogCheckBox.isSelected();
     }
 }

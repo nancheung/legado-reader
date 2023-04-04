@@ -34,6 +34,8 @@ public class Data {
      * API自定义参数
      */
     public Map<String, Object> apiCustomParam;
+
+    public boolean enableErrorLog;
     
     
     public Color textBodyFontColor;
@@ -117,6 +119,7 @@ public class Data {
         // 按照回车符分割，取出所有自定义参数
         List<String> apiCustomParamList = StrUtil.split(apiCustomParam, "\n");
     
+        // 按照 :@ 分割，取出参数名和参数值,转成map
         Map<String, Object> map = apiCustomParamList.stream()
                 .filter(StrUtil::isNotEmpty)
                 .filter(s -> s.contains(StrPool.COLON + StrPool.AT))

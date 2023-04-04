@@ -22,7 +22,7 @@ import java.util.List;
  */
 @UtilityClass
 public class ApiUtil {
-    
+
     /**
      * 获取书架目录列表
      *
@@ -30,15 +30,13 @@ public class ApiUtil {
      */
     public List<BookDTO> getBookshelf() {
         String url = Data.getAddress() + AddressEnum.GET_BOOKSHELF.getAddress();
-        String textBody = HttpUtil.get(url,Data.apiCustomParam);
-        R<List<BookDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
-        }, true);
-        
-        System.out.println(AddressEnum.GET_BOOKSHELF.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
-        
+
+        R<List<BookDTO>> r = get(url, new TypeReference<>() {
+        });
+
         return r.getData();
     }
-    
+
     /**
      * 获取正文内容
      *
@@ -47,16 +45,13 @@ public class ApiUtil {
     public String getBookContent(String bookUrl, int bookIndex) {
         // 调用API获取正文内容
         String url = Data.getAddress() + AddressEnum.GET_BOOK_CONTENT.getAddress() + "?url=" + URLUtil.encodeAll(bookUrl) + "&index=" + bookIndex;
-        
-        String textBody = HttpUtil.get(url,Data.apiCustomParam);
-        R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
-        }, true);
-        
-        System.out.println(AddressEnum.GET_BOOK_CONTENT.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
-        
+
+        R<String> r = get(url, new TypeReference<>() {
+        });
+
         return r.getData();
     }
-    
+
     /**
      * 获取章节目录列表
      *
@@ -65,23 +60,20 @@ public class ApiUtil {
     public List<BookChapterDTO> getChapterList(String bookUrl) {
         // 调用API获取书架目录
         String url = Data.getAddress() + AddressEnum.GET_CHAPTER_LIST.getAddress() + "?url=" + URLUtil.encodeAll(bookUrl);
-        
-        String textBody = HttpUtil.get(url,Data.apiCustomParam);
-        R<List<BookChapterDTO>> r = JSONUtil.toBean(textBody, new TypeReference<>() {
-        }, true);
-        
-        System.out.println(AddressEnum.GET_CHAPTER_LIST.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
-        
+
+        R<List<BookChapterDTO>> r = get(url, new TypeReference<>() {
+        });
+
         return r.getData();
     }
-    
+
     /**
      * 保存阅读进度
      */
     public void saveBookProgress(String author, String name, int index, String title, int durChapterPos) {
         // 调用API获取书架目录
         String url = Data.getAddress() + AddressEnum.SAVE_BOOK_PROGRESS.getAddress();
-        
+
         BookProgressDTO bookProgressDTO = BookProgressDTO.builder()
                 .author(author)
                 .name(name)
@@ -92,19 +84,36 @@ public class ApiUtil {
                 .url(CurrentReadData.getBook().getBookUrl())
                 .index(index)
                 .build();
-    
-    
+
+        post(url, bookProgressDTO, new TypeReference<>() {
+        });
+    }
+
+
+    private <R> R get(String url, TypeReference<R> typeReference) {
+        String textBody;
+
+        try {
+            textBody = HttpUtil.get(url, Data.apiCustomParam);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("\n%s：%s\n参数：\n%s\n", "调用API失败", url, Data.apiCustomParam), e);
+        }
+
+        return JSONUtil.toBean(textBody, typeReference, true);
+    }
+
+    private <R> R post(String url, Object body, TypeReference<R> typeReference) {
         String textBody;
         try (HttpResponse execute = HttpUtil.createPost(url)
                 .form(Data.apiCustomParam)
-                .body(JSONUtil.toJsonStr(bookProgressDTO))
+                .body(JSONUtil.toJsonStr(body))
                 .execute()) {
             textBody = execute.body();
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("\n%s：%s\n参数：\n%s\n%s\n", "调用API失败", url, Data.apiCustomParam, body), e);
         }
-        
-        R<String> r = JSONUtil.toBean(textBody, new TypeReference<>() {
-        }, true);
-        
-        System.out.println(AddressEnum.SAVE_BOOK_PROGRESS.getAddress() + "：" + r.getIsSuccess() + "：" + r.getErrorMsg());
+
+        return JSONUtil.toBean(textBody, typeReference, true);
     }
+
 }
