@@ -52,7 +52,7 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 > 1. 打开插件设置窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Tools` -> `Legado Reader`
 > 2. 可对插件进行默认设置，如：阅读APP的web服务地址、阅读界面的字体大小、阅读界面的字体大小等。
 
-## 使用服务器版阅读([hectorqin/reader](https://github.com/hectorqin/reader))
+## 使用服务器版阅读([hectorqin/reader](https://github.com/hectorqin/reader)) / 使用`Replit` 免费部署服务版([wy580477/reader-replit](https://github.com/wy580477/reader-replit))
 > 1. 获取账号token
 >    > 打开服务器版阅读的web页面，登录成功后，在书架页面，开发者工具的控制台中输入：`"accessToken:@"+localStorage.api_token`
 > 2. 打开插件设置窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Tools` -> `Legado Reader`
