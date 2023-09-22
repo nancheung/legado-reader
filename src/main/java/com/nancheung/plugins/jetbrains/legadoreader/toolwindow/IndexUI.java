@@ -4,13 +4,15 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
+import com.nancheung.plugins.jetbrains.legadoreader.common.json.LogUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
+import com.nancheung.plugins.jetbrains.legadoreader.properties.GlobalSettingProperties;
+import com.nancheung.plugins.jetbrains.legadoreader.properties.PropertiesFactory;
+import com.nancheung.plugins.jetbrains.legadoreader.properties.UserBehaviorProperties;
 import lombok.Getter;
 
 import javax.swing.*;
@@ -93,8 +95,8 @@ public class IndexUI {
 
     public static final DefaultComboBoxModel<String> ADDRESS_HISTORY_BOX_MODEL = new DefaultComboBoxModel<>();
 
-    private static final IndexUI INSTANCE = new IndexUI();
-
+    private static final GlobalSettingProperties GLOBAL_SETTING_PROPERTIES = PropertiesFactory.getGlobalSetting();
+    private static final UserBehaviorProperties USER_BEHAVIOR_PROPERTIES = PropertiesFactory.getUserBehavior();
 
     public IndexUI() {
         // 初始化界面设置
@@ -117,7 +119,7 @@ public class IndexUI {
         CompletableFuture.supplyAsync(ApiUtil::getBookshelf)
                 .thenAccept(books -> {
                     // 保存书架目录信息
-                    Data.setBookshelf(books);
+                    CurrentReadData.setBookshelf(books);
                     // 设置书架目录UI
                     setBookshelfUI(books);
 
@@ -125,9 +127,7 @@ public class IndexUI {
                 }).exceptionally(throwable -> {
                     showErrorTips(bookshelfScrollPane, bookshelfErrorTipsPane);
 
-                    if (Data.enableErrorLog) {
-                        log.error("获取书架列表失败", throwable.getCause());
-                    }
+                    LogUtil.error(log, "获取书架列表失败", throwable.getCause());
 
                     throwableConsumer.accept(throwable);
                     return null;
@@ -176,7 +176,7 @@ public class IndexUI {
             // 设置按钮不可点击，防止多次点击
             refreshBookshelfButton.setEnabled(false);
 
-            Data.addAddress(addressTextField.getText());
+            USER_BEHAVIOR_PROPERTIES.addAddress(addressTextField.getText());
 
             setAddressUI();
 
@@ -212,7 +212,7 @@ public class IndexUI {
                 String author = model.getValueAt(row, 3).toString();
 
                 // 保存当前阅读信息
-                BookDTO book = Data.getBook(author, name);
+                BookDTO book = CurrentReadData.getBook(author, name);
                 CurrentReadData.setBook(book);
                 CurrentReadData.setBookIndex(book.getDurChapterIndex());
 
@@ -227,9 +227,7 @@ public class IndexUI {
                         }).exceptionally(throwable -> {
                             showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
 
-                            if (Data.enableErrorLog) {
-                                log.error("获取章节列表失败", throwable.getCause());
-                            }
+                            LogUtil.error(log, "获取章节列表失败", throwable.getCause());
                             return null;
                         });
             }
@@ -271,8 +269,8 @@ public class IndexUI {
 
     private void initTextBodyUI() {
         // 设置正文面板的字体
-        textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
-        textBodyPane.setFont(Data.textBodyFont);
+        textBodyPane.setForeground(GLOBAL_SETTING_PROPERTIES.getTextBodyFontColor());
+        textBodyPane.setFont(GLOBAL_SETTING_PROPERTIES.getTextBodyFont());
         // 设置加载中的提示
         textBodyPane.setText("加载中...");
 
@@ -307,10 +305,7 @@ public class IndexUI {
                 }).exceptionally(throwable -> {
                     showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
 
-                    if (Data.enableErrorLog) {
-                        log.error("获取正文内容失败", throwable.getCause());
-                    }
-
+                    LogUtil.error(log, "获取正文内容失败", throwable.getCause());
                     return null;
                 });
 
@@ -324,12 +319,12 @@ public class IndexUI {
     }
 
     private void setAddressUI() {
-        List<String> addressHistoryList = Data.getAddressHistory();
+        List<String> addressHistoryList = USER_BEHAVIOR_PROPERTIES.getAddressHistoryList();
         // 设置书架面板的ip输入框的历史记录
         ADDRESS_HISTORY_BOX_MODEL.removeAllElements();
         ADDRESS_HISTORY_BOX_MODEL.addAll(addressHistoryList);
 
-        if (addressHistoryList.size() == 0) {
+        if (addressHistoryList.isEmpty()) {
             addressHistoryBox.setEnabled(false);
             ADDRESS_HISTORY_BOX_MODEL.addElement("无历史记录");
             return;
@@ -344,9 +339,5 @@ public class IndexUI {
 
     public JComponent getComponent() {
         return rootPanel;
-    }
-
-    public static IndexUI getInstance() {
-        return INSTANCE;
     }
 }

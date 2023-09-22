@@ -5,7 +5,7 @@ import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
 
 public class ToolWindowReaderService implements IReader {
     
-    private final IndexUI indexUI = IndexUI.getInstance();
+    private final IndexUI indexUI = IndexWindowFactory.getInstance();
     
     @Override
     public void previousPage() {
