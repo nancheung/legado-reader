@@ -3,7 +3,6 @@ package com.nancheung.plugins.jetbrains.legadoreader.gui;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.ui.SettingUI;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
 import com.nancheung.plugins.jetbrains.legadoreader.toolwindow.IndexUI;
@@ -44,14 +43,8 @@ public class SettingFactory implements SearchableConfigurable {
         // 保存设置
         SETTING_UI.saveSettings();
 
-        // 同步到 Data 静态字段（为了向后兼容）
-        PluginSettingsManager settingsManager = PluginSettingsManager.getInstance();
-        Data.textBodyFontColor = settingsManager.getTextBodyFontColor();
-        Data.textBodyFont = settingsManager.getTextBodyFont();
-        Data.apiCustomParam = settingsManager.getApiCustomParam();
-        Data.enableErrorLog = settingsManager.isEnableErrorLog();
-
         // 更新 UI
+        PluginSettingsManager settingsManager = PluginSettingsManager.getInstance();
         java.awt.Color fontColor = settingsManager.getTextBodyFontColor();
         IndexUI.getInstance().getTextBodyPane().setForeground(new JBColor(fontColor, fontColor));
         IndexUI.getInstance().getTextBodyPane().setFont(settingsManager.getTextBodyFont());

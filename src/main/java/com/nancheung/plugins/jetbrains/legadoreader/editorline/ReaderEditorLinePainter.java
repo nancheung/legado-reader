@@ -8,7 +8,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.BodyInLineData;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +27,7 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
     @Override
     public @Nullable Collection<LineExtensionInfo> getLineExtensions(@NotNull Project project, @NotNull VirtualFile file, int lineNumber) {
         // 判断是否启用了行内阅读
-        if (!Data.enableShowBodyInLine) {
+        if (!PluginSettingsManager.getInstance().isEnableShowBodyInLine()) {
             return null;
         }
         

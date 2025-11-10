@@ -5,7 +5,7 @@ import com.intellij.openapi.editor.event.EditorMouseEvent;
 import com.intellij.openapi.editor.event.EditorMouseListener;
 import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
 import com.nancheung.plugins.jetbrains.legadoreader.common.ReaderFactory;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
@@ -22,7 +22,7 @@ public class SwitchLineMouseListener implements EditorMouseListener, Disposable 
     @Override
     public void mouseClicked(@NotNull EditorMouseEvent e) {
         // 判断是否启用了行内阅读
-        if (!Data.enableShowBodyInLine) {
+        if (!PluginSettingsManager.getInstance().isEnableShowBodyInLine()) {
             return;
         }
         

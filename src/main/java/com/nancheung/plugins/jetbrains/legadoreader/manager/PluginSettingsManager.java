@@ -113,4 +113,13 @@ public final class PluginSettingsManager {
     public boolean isEnableErrorLog() {
         return Boolean.TRUE.equals(currentSettings.enableErrorLog());
     }
+
+    /**
+     * 是否启用在代码行中显示正文
+     *
+     * @return 是否启用
+     */
+    public boolean isEnableShowBodyInLine() {
+        return Boolean.TRUE.equals(currentSettings.enableShowBodyInLine());
+    }
 }

@@ -8,7 +8,6 @@ import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.AddressHistoryManager;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
@@ -22,9 +21,13 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Getter
 public class IndexUI {
@@ -99,6 +102,15 @@ public class IndexUI {
 
     private static final IndexUI INSTANCE = new IndexUI();
 
+    /**
+     * 书架目录（临时存储在内存）
+     * key: author + "#" + name
+     * value: 书籍信息
+     */
+    private Map<String, BookDTO> bookshelf;
+
+    private static final BiFunction<String, String, String> BOOK_MAP_KEY_FUNC = (author, name) -> author + "#" + name;
+
 
     public IndexUI() {
         // 初始化界面设置
@@ -121,7 +133,11 @@ public class IndexUI {
         CompletableFuture.supplyAsync(ApiUtil::getBookshelf)
                 .thenAccept(books -> {
                     // 保存书架目录信息
-                    Data.setBookshelf(books);
+                    this.bookshelf = books.stream()
+                            .collect(Collectors.toMap(
+                                    book -> BOOK_MAP_KEY_FUNC.apply(book.getAuthor(), book.getName()),
+                                    Function.identity()
+                            ));
                     // 设置书架目录UI
                     setBookshelfUI(books);
 
@@ -216,7 +232,7 @@ public class IndexUI {
                 String author = model.getValueAt(row, 3).toString();
 
                 // 获取书籍信息
-                BookDTO book = Data.getBook(author, name);
+                BookDTO book = getBook(author, name);
 
                 // 调用API获取章节列表
                 CompletableFuture.supplyAsync(() -> ApiUtil.getChapterList(book.getBookUrl()))
@@ -357,5 +373,19 @@ public class IndexUI {
 
     public static IndexUI getInstance() {
         return INSTANCE;
+    }
+
+    /**
+     * 获取书籍
+     *
+     * @param author 作者
+     * @param name   书名
+     * @return 书籍信息
+     */
+    private BookDTO getBook(String author, String name) {
+        if (bookshelf == null) {
+            return null;
+        }
+        return bookshelf.get(BOOK_MAP_KEY_FUNC.apply(author, name));
     }
 }

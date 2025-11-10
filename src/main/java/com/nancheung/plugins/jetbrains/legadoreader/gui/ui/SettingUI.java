@@ -19,6 +19,7 @@ public class SettingUI {
     private JSpinner textBodyFontSizeSpinner;
     private JTextArea apiCustomParamTextArea;
     private JCheckBox enableErrorLogCheckBox;
+    private JCheckBox enableInLineModelCheckBox;
 
     private final PluginSettingsManager settingsManager = PluginSettingsManager.getInstance();
 
@@ -66,6 +67,7 @@ public class SettingUI {
         }
 
         enableErrorLogCheckBox.setSelected(Boolean.TRUE.equals(data.enableErrorLog()));
+        enableInLineModelCheckBox.setSelected(Boolean.TRUE.equals(data.enableShowBodyInLine()));
     }
 
 
@@ -75,7 +77,8 @@ public class SettingUI {
                 textBodyFontColorLabel.getForeground().getRGB(),
                 (int) textBodyFontSizeSpinner.getValue(),
                 apiCustomParamTextArea.getText(),
-                enableErrorLogCheckBox.isSelected()
+                enableErrorLogCheckBox.isSelected(),
+                enableInLineModelCheckBox.isSelected()
         );
 
         // 保存到 SettingsManager
