@@ -12,7 +12,7 @@ public class IndexWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         //获取内容工厂的实例
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = ContentFactory.getInstance();
         //获取用于toolWindow显示的内容
         Content content = contentFactory.createContent(IndexUI.getInstance().getComponent(), "", false);
         //给toolWindow设置内容

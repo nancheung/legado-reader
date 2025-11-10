@@ -1,3 +1,9 @@
+## 自定义
+.intellijPlatform
+.kotlin
+.qodana
+build
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -39,7 +45,9 @@ bin/
 .vscode/
 
 ### Mac OS ###
-.DS_Store### Java template
+.DS_Store
+
+### Java template
 # Compiled class file
 *.class
 

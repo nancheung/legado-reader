@@ -8,9 +8,9 @@
 
 # Legado Reader
 > 编码，并阅读。
-
+<!-- Plugin description -->
 Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrains IDE插件版，旨在随时随地在IDE中进行阅读，为编码过程带来灵感和效率的提升。
-
+<!-- Plugin description end -->
 
 
 
