@@ -40,22 +40,36 @@ Legado Reader 是 [开源阅读APP](https://github.com/gedoor/legado) 的 JetBra
 
 两种模式都实现 `IReader` 接口，通过 `ReaderFactory` 枚举统一管理。快捷键操作（上一章/下一章）会调用当前激活模式的 reader 实例。
 
-### 2. 数据管理层次
+### 2. 数据管理层次（使用 Light Services）
 
-项目采用分层数据管理：
+项目采用四层数据管理架构：
 
-**全局配置数据** (`Data.java`)：
-- 使用 IntelliJ Platform 的 `PropertiesComponent` 进行持久化
-- 管理阅读地址历史（最多 4 条，使用 `{nc}` 分隔）
-- 存储用户配置（字体、颜色、API 自定义参数等）
-- 静态代码块在插件加载时自动初始化
+**数据模型层** (`model` 包)：
+- 使用 Java 21 Record 定义不可变数据对象
+- `PluginSettingsData` - 插件设置数据
+- `AddressHistoryData` - 历史记录集合
+- `AddressHistoryItem` - 历史记录项
+- `ReadingSession` - 阅读会话（不可变，线程安全）
 
-**当前阅读会话数据** (`CurrentReadData.java`)：
-- 临时存储当前书籍、章节列表、章节索引、正文内容
-- 不持久化，仅在运行时使用
+**存储层** (`storage` 包) - Light Services：
+- 使用 `@Service` 注解定义 Application Service
+- `PluginSettingsStorage` - 设置的 JSON 序列化和持久化
+- `AddressHistoryStorage` - 历史记录的 JSON 序列化和持久化
+- 使用 Jackson 进行 JSON 序列化/反序列化
+- 使用 `PropertiesComponent.getInstance()` 进行 Application 级别存储
 
-**行内阅读数据** (`BodyInLineData.java`)：
-- 用于编辑器行内阅读模式的分页管理
+**管理层** (`manager` 包) - Light Services：
+- 使用 `@Service` 注解定义 Application Service
+- `PluginSettingsManager` - 管理插件设置的内存缓存和读写
+- `AddressHistoryManager` - 管理地址历史（最多 4 条）
+- `ReadingSessionManager` - 管理当前阅读会话（内存中，不持久化，使用 AtomicReference 保证线程安全）
+- 所有 Manager 使用 Application Service，多窗口共享状态
+
+**兼容层** (`dao` 包)：
+- `Data.java` - 代理到各个 Manager，保持向后兼容（标记 @Deprecated）
+- `CurrentReadData.java` - 代理到 ReadingSessionManager（标记 @Deprecated）
+- 保留原有 API 接口，内部调用新的 Manager 层
+- `BodyInLineData.java` - 用于编辑器行内阅读模式的分页管理
 
 ### 3. API 通信机制
 
@@ -120,22 +134,44 @@ API 端点定义在 `AddressEnum` 中：
 ## 重要常量和约定
 
 - 插件 ID 前缀：`com.nancheung.legado-reader`
-- 持久化数据 key：`com.nancheung.legado-reader.persistence.data`
+- 存储键命名空间：`com.nancheung.legado-reader.settings` / `.addressHistory`
 - 默认 IDE 版本：IntelliJ IDEA 2024.2 (IC)
 - Java 版本：21
-- 地址历史分隔符：`{nc}`
-- API 自定义参数分隔符：`:@`
+- API 自定义参数格式：`参数名:@参数值`（每行一个）
+- 数据序列化：使用 Jackson JSON 格式
+- 服务类型：Light Services（Application 级别，多窗口共享）
 
 ## 开发注意事项
 
 1. **异步处理**：所有 API 调用必须使用 `CompletableFuture` 异步执行，避免阻塞 EDT（Event Dispatch Thread）
 
-2. **单例模式**：`IndexUI` 和 `SettingUI` 都是单例，全局共享状态
+2. **Light Services 使用**：
+   - 使用 `@Service` 注解定义服务类（类必须是 final 的）
+   - 通过 `ApplicationManager.getApplication().getService(ServiceClass.class)` 获取服务实例
+   - 不需要在 plugin.xml 中注册
+   - Application Service 在多个 IDE 窗口间共享状态
 
-3. **配置持久化**：使用 `PropertiesComponent.getInstance().setValue/getValue` 进行配置的读写
+3. **数据不可变性**：
+   - 使用 Java 21 Record 定义数据对象，确保不可变性
+   - `ReadingSession` 通过返回新实例的方式更新状态
+   - 使用 `AtomicReference` 保证线程安全
 
-4. **错误处理**：API 调用失败时显示错误提示面板，可通过设置启用详细日志
+4. **向后兼容**：
+   - `Data.java` 和 `CurrentReadData.java` 作为兼容层保留
+   - 新代码应直接使用 Manager 层的 API
+   - 兼容层已标记为 @Deprecated
 
-5. **UI 更新**：所有 UI 操作必须在 EDT 线程执行，异步任务完成后使用 `thenAccept` 回调更新 UI
+5. **配置持久化**：
+   - 新架构使用 JSON 格式存储配置，通过 Jackson 序列化
+   - 旧格式数据会丢失，需要重新配置
+   - 所有持久化操作由 Storage 层统一管理
 
-6. **行内阅读功能**：当前处于未完成状态（见 EditorLineReaderService 中的 TODO 注释）
+6. **错误处理**：API 调用失败时显示错误提示面板，可通过设置启用详细日志
+
+7. **UI 更新**：所有 UI 操作必须在 EDT 线程执行，异步任务完成后使用 `thenAccept` 回调更新 UI
+
+8. **行内阅读功能**：当前处于未完成状态（见 EditorLineReaderService 中的 TODO 注释）
+
+9. **gradle 配置**：
+   - 依赖使用 version_catalogs管理，版本号在 [libs.versions.toml](gradle/libs.versions.toml) 定义
+   - 

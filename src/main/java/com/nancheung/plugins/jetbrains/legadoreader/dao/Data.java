@@ -1,15 +1,11 @@
 package com.nancheung.plugins.jetbrains.legadoreader.dao;
 
-import cn.hutool.core.text.StrPool;
-import cn.hutool.core.util.StrUtil;
-import com.intellij.ide.util.PropertiesComponent;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
-import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.AddressHistoryManager;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
 import lombok.experimental.UtilityClass;
 
 import java.awt.*;
-import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -17,118 +13,151 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 数据
+ * 数据访问类（兼容层）
+ * 代理到新的 Manager 层，保持向后兼容
  *
  * @author NanCheung
+ * @deprecated 建议直接使用 {@link PluginSettingsManager} 和 {@link AddressHistoryManager}
  */
 @UtilityClass
+@Deprecated
 public class Data {
-    private String address;
-    
+
+    // ========== 插件设置相关（代理到 PluginSettingsManager） ==========
+
     /**
-     * 历史address
+     * 正文字体颜色
+     * @deprecated 使用 {@link PluginSettingsManager#getTextBodyFontColor()}
      */
-    private Map<String, LocalDateTime> addressHistory = new LinkedHashMap<>(4);
-    
+    @Deprecated
+    public Color textBodyFontColor;
+
     /**
-     * API自定义参数
+     * 正文字体
+     * @deprecated 使用 {@link PluginSettingsManager#getTextBodyFont()}
      */
+    @Deprecated
+    public Font textBodyFont;
+
+    /**
+     * API 自定义参数
+     * @deprecated 使用 {@link PluginSettingsManager#getApiCustomParam()}
+     */
+    @Deprecated
     public Map<String, Object> apiCustomParam;
 
+    /**
+     * 是否启用错误日志
+     * @deprecated 使用 {@link PluginSettingsManager#isEnableErrorLog()}
+     */
+    @Deprecated
     public boolean enableErrorLog;
-    
-    
-    public Color textBodyFontColor;
-    
-    public Font textBodyFont;
-    
+
     /**
      * 是否启用在代码行中显示正文
      */
     public boolean enableShowBodyInLine = false;
+
+    // 静态代码块：初始化时从 Manager 同步数据到字段
+    static {
+        syncFromManagers();
+    }
+
     /**
-     * 书架目录
-     * key: author +"#"+ name
+     * 从 Manager 同步数据到静态字段（保持向后兼容）
+     */
+    private void syncFromManagers() {
+        PluginSettingsManager settingsManager = PluginSettingsManager.getInstance();
+        textBodyFontColor = settingsManager.getTextBodyFontColor();
+        textBodyFont = settingsManager.getTextBodyFont();
+        apiCustomParam = settingsManager.getApiCustomParam();
+        enableErrorLog = settingsManager.isEnableErrorLog();
+    }
+
+    // ========== 地址历史相关（代理到 AddressHistoryManager） ==========
+
+    /**
+     * 添加地址到历史记录
+     *
+     * @param address 地址
+     * @deprecated 使用 {@link AddressHistoryManager#addAddress(String)}
+     */
+    @Deprecated
+    public void addAddress(String address) {
+        AddressHistoryManager.getInstance().addAddress(address);
+    }
+
+    /**
+     * 获取当前地址（最近使用的地址）
+     *
+     * @return 当前地址
+     * @deprecated 使用 {@link AddressHistoryManager#getMostRecent()}
+     */
+    @Deprecated
+    public String getAddress() {
+        return AddressHistoryManager.getInstance().getMostRecent();
+    }
+
+    /**
+     * 获取地址历史列表
+     *
+     * @return 地址列表
+     * @deprecated 使用 {@link AddressHistoryManager#getAddressList()}
+     */
+    @Deprecated
+    public List<String> getAddressHistory() {
+        return AddressHistoryManager.getInstance().getAddressList();
+    }
+
+    // ========== 书架数据（临时存储，不持久化） ==========
+
+    /**
+     * 书架目录（临时存储在内存）
+     * key: author + "#" + name
      * value: 书籍信息
      */
     private Map<String, BookDTO> bookshelf;
-    
+
     private final BiFunction<String, String, String> BOOK_MAP_KEY_FUNC = (author, name) -> author + "#" + name;
-    
-    static {
-        // 从本地读取历史address
-        String addressHistoryStr = PropertiesComponent.getInstance().getValue(Constant.PLUGIN__PERSISTENCE_DATA + ".addressHistory");
-        
-        if (addressHistoryStr != null) {
-            String[] addressHistoryArr = addressHistoryStr.split("\\{nc}");
-            for (int i = 0; i < addressHistoryArr.length; i++) {
-                if (i == 0) {
-                    Data.address = addressHistoryArr[i];
-                }
-                
-                Data.addressHistory.put(addressHistoryArr[i], LocalDateTime.now());
-            }
-        }
-        
-        // 从本地读取API自定义参数
-        String apiCustomParamStr = PropertiesComponent.getInstance().getValue(Constant.PLUGIN_SETTING_ID + ".apiCustomParam");
-        if (StrUtil.isNotBlank(apiCustomParamStr)) {
-            setApiCustomParam(apiCustomParamStr);
-        }
-    }
-    
-    public void addAddress(String address) {
-        Data.addressHistory.put(address, LocalDateTime.now());
-        Data.address = address;
-        
-        // 只保留最近的4条记录
-        if (Data.addressHistory.size() > 4) {
-            Data.addressHistory = Data.addressHistory.entrySet().stream()
-                    .sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue()))
-                    .limit(4)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        }
-        
-        // 持久化到本地
-        PropertiesComponent.getInstance().setValue(Constant.PLUGIN__PERSISTENCE_DATA + ".addressHistory", String.join("{nc}", getAddressHistory()));
-    }
-    
-    public String getAddress() {
-        return address;
-    }
-    
-    public List<String> getAddressHistory() {
-        // addressHistory的key转为list，按照value排序
-        return addressHistory.entrySet().stream().sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue())).map(Map.Entry::getKey).collect(Collectors.toList());
-    }
-    
-    
+
+    /**
+     * 获取书籍
+     *
+     * @param author 作者
+     * @param name   书名
+     * @return 书籍信息
+     */
     public BookDTO getBook(String author, String name) {
+        if (bookshelf == null) {
+            return null;
+        }
         return bookshelf.get(BOOK_MAP_KEY_FUNC.apply(author, name));
     }
-    
+
+    /**
+     * 设置书架
+     *
+     * @param books 书籍列表
+     */
     public void setBookshelf(List<BookDTO> books) {
-        Data.bookshelf = books.stream().collect(Collectors.toMap(book -> BOOK_MAP_KEY_FUNC.apply(book.getAuthor(), book.getName()), Function.identity()));
+        Data.bookshelf = books.stream()
+                .collect(Collectors.toMap(
+                        book -> BOOK_MAP_KEY_FUNC.apply(book.getAuthor(), book.getName()),
+                        Function.identity()
+                ));
     }
-    
-    public Map<String, Object> setApiCustomParam(String apiCustomParam) {
-        if (StrUtil.isBlank(apiCustomParam)) {
-            return Map.of();
-        }
-        
-        // 按照回车符分割，取出所有自定义参数
-        List<String> apiCustomParamList = StrUtil.split(apiCustomParam, "\n");
-    
-        // 按照 :@ 分割，取出参数名和参数值,转成map
-        Map<String, Object> map = apiCustomParamList.stream()
-                .filter(StrUtil::isNotEmpty)
-                .filter(s -> s.contains(StrPool.COLON + StrPool.AT))
-                .map(s -> StrUtil.split(s, StrPool.COLON + StrPool.AT))
-                .collect(Collectors.toMap(l -> l.get(0), l -> l.get(1), (a, b) -> b));
-    
-        Data.apiCustomParam = map;
-        
-        return map;
-        
+
+    /**
+     * 设置 API 自定义参数（仅用于兼容，实际不需要调用）
+     * 参数会在设置保存时自动处理
+     *
+     * @param apiCustomParamStr 参数字符串
+     * @return 参数 Map
+     * @deprecated 此方法不再需要，设置会自动管理
+     */
+    @Deprecated
+    public Map<String, Object> setApiCustomParam(String apiCustomParamStr) {
+        // 仅用于兼容，返回当前的参数
+        return PluginSettingsManager.getInstance().getApiCustomParam();
     }
 }
