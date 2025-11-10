@@ -8,14 +8,18 @@ import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.AddressHistoryManager;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
+import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSession;
 import lombok.Getter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 import java.util.Vector;
@@ -125,7 +129,7 @@ public class IndexUI {
                 }).exceptionally(throwable -> {
                     showErrorTips(bookshelfScrollPane, bookshelfErrorTipsPane);
 
-                    if (Data.enableErrorLog) {
+                    if (PluginSettingsManager.getInstance().isEnableErrorLog()) {
                         log.error("获取书架列表失败", throwable.getCause());
                     }
 
@@ -176,7 +180,7 @@ public class IndexUI {
             // 设置按钮不可点击，防止多次点击
             refreshBookshelfButton.setEnabled(false);
 
-            Data.addAddress(addressTextField.getText());
+            AddressHistoryManager.getInstance().addAddress(addressTextField.getText());
 
             setAddressUI();
 
@@ -211,23 +215,27 @@ public class IndexUI {
                 String name = model.getValueAt(row, 0).toString();
                 String author = model.getValueAt(row, 3).toString();
 
-                // 保存当前阅读信息
+                // 获取书籍信息
                 BookDTO book = Data.getBook(author, name);
-                CurrentReadData.setBook(book);
-                CurrentReadData.setBookIndex(book.getDurChapterIndex());
 
                 // 调用API获取章节列表
-                CompletableFuture.supplyAsync(() -> ApiUtil.getChapterList(CurrentReadData.getBook().getBookUrl()))
+                CompletableFuture.supplyAsync(() -> ApiUtil.getChapterList(book.getBookUrl()))
                         .thenAccept(bookChapters -> {
-                            // 保存章节列表
-                            CurrentReadData.setBookChapterList(bookChapters);
+                            // 创建新的 ReadingSession
+                            ReadingSession session = new ReadingSession(
+                                    book,
+                                    bookChapters,
+                                    book.getDurChapterIndex(),
+                                    null  // content 初始为 null
+                            );
+                            ReadingSessionManager.getInstance().setSession(session);
 
                             // 设置正文数据
                             setTextBodyUIData(book.getDurChapterPos());
                         }).exceptionally(throwable -> {
                             showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
 
-                            if (Data.enableErrorLog) {
+                            if (PluginSettingsManager.getInstance().isEnableErrorLog()) {
                                 log.error("获取章节列表失败", throwable.getCause());
                             }
                             return null;
@@ -271,8 +279,9 @@ public class IndexUI {
 
     private void initTextBodyUI() {
         // 设置正文面板的字体
-        textBodyPane.setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
-        textBodyPane.setFont(Data.textBodyFont);
+        Color fontColor = PluginSettingsManager.getInstance().getTextBodyFontColor();
+        textBodyPane.setForeground(new JBColor(fontColor, fontColor));
+        textBodyPane.setFont(PluginSettingsManager.getInstance().getTextBodyFont());
         // 设置加载中的提示
         textBodyPane.setText("加载中...");
 
@@ -291,15 +300,15 @@ public class IndexUI {
     }
 
     private void setTextBodyUIData(int durChapterPos) {
-        BookDTO book = CurrentReadData.getBook();
+        BookDTO book = ReadingSessionManager.getInstance().getCurrentBook();
 
         // 获取章节标题
-        String title = CurrentReadData.getBookChapter().getTitle();
+        String title = ReadingSessionManager.getInstance().getCurrentChapter().getTitle();
 
         // 调用API获取正文内容
-        CompletableFuture.supplyAsync(() -> ApiUtil.getBookContent(book.getBookUrl(), CurrentReadData.getBookIndex()))
+        CompletableFuture.supplyAsync(() -> ApiUtil.getBookContent(book.getBookUrl(), ReadingSessionManager.getInstance().getCurrentChapterIndex()))
                 .thenAccept(bookContent -> {
-                    CurrentReadData.setBodyContent(bookContent);
+                    ReadingSessionManager.getInstance().setContent(bookContent);
 
                     // 设置正文内容
                     textBodyPane.setText(title + "\n" + bookContent);
@@ -307,7 +316,7 @@ public class IndexUI {
                 }).exceptionally(throwable -> {
                     showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
 
-                    if (Data.enableErrorLog) {
+                    if (PluginSettingsManager.getInstance().isEnableErrorLog()) {
                         log.error("获取正文内容失败", throwable.getCause());
                     }
 
@@ -315,7 +324,7 @@ public class IndexUI {
                 });
 
         // 同步阅读进度
-        CompletableFuture.runAsync(() -> ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), CurrentReadData.getBookIndex(), title, durChapterPos));
+        CompletableFuture.runAsync(() -> ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), ReadingSessionManager.getInstance().getCurrentChapterIndex(), title, durChapterPos));
     }
 
     private void showErrorTips(JScrollPane textBodyScrollPane, JTextPane textBodyErrorTipsPane) {
@@ -324,7 +333,7 @@ public class IndexUI {
     }
 
     private void setAddressUI() {
-        List<String> addressHistoryList = Data.getAddressHistory();
+        List<String> addressHistoryList = AddressHistoryManager.getInstance().getAddressList();
         // 设置书架面板的ip输入框的历史记录
         ADDRESS_HISTORY_BOX_MODEL.removeAllElements();
         ADDRESS_HISTORY_BOX_MODEL.addAll(addressHistoryList);

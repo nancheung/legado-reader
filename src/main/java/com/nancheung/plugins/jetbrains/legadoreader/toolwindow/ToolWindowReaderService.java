@@ -1,40 +1,40 @@
 package com.nancheung.plugins.jetbrains.legadoreader.toolwindow;
 
 import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 
 public class ToolWindowReaderService implements IReader {
-    
+
     private final IndexUI indexUI = IndexUI.getInstance();
-    
+
     @Override
     public void previousPage() {
-    
+
     }
-    
+
     @Override
     public void nextPage() {
     }
-    
+
     @Override
     public void previousChapter() {
         // 第一章无法继续上一章
-        if (CurrentReadData.getBookIndex() < 1) {
+        if (ReadingSessionManager.getInstance().getCurrentChapterIndex() < 1) {
             return;
         }
-        
+
         // 更新索引
-        CurrentReadData.indexAtomicDecrement();
-        
-        
+        ReadingSessionManager.getInstance().previousChapter();
+
+
         indexUI.switchChapter(0);
     }
-    
+
     @Override
     public void nextChapter() {
         // 更新索引
-        CurrentReadData.indexAtomicIncrement();
-        
+        ReadingSessionManager.getInstance().nextChapter();
+
         indexUI.switchChapter(0);
     }
     

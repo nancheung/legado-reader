@@ -4,7 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.BodyInLineData;
 import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
-import com.nancheung.plugins.jetbrains.legadoreader.dao.CurrentReadData;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +87,7 @@ public class EditorLineReaderService implements IReader {
      */
     @Override
     public void splitChapter(String chapterContent, int pageSize) {
-        String bodyContent = CurrentReadData.getBodyContent();
+        String bodyContent = ReadingSessionManager.getInstance().getCurrentContent();
         BodyInLineData.setBodyContent(bodyContent);
         
         if (StrUtil.isEmpty(bodyContent)) {

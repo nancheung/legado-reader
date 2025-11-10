@@ -2,6 +2,7 @@ package com.nancheung.plugins.jetbrains.legadoreader.dao;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -70,16 +71,16 @@ public class BodyInLineData {
      * 获取当前行
      */
     public LineData getCurrentLine() {
-        if (currentLine == null || !bodyContent.equals(CurrentReadData.getBodyContent())) {
+        if (currentLine == null || !bodyContent.equals(ReadingSessionManager.getInstance().getCurrentContent())) {
             initCurrent();
         }
-        
+
         return currentLine;
     }
     
     
     public void initCurrent() {
-        bodyContent = CurrentReadData.getBodyContent();
+        bodyContent = ReadingSessionManager.getInstance().getCurrentContent();
         if (StrUtil.isEmpty(bodyContent)) {
             return;
         }

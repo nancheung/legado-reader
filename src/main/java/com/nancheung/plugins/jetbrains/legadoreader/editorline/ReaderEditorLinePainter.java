@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.BodyInLineData;
 import com.nancheung.plugins.jetbrains.legadoreader.dao.Data;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +33,7 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
         }
         
         TextAttributes textAttributes = new TextAttributes();
-        textAttributes.setForegroundColor(Data.textBodyFontColor);
+        textAttributes.setForegroundColor(PluginSettingsManager.getInstance().getTextBodyFontColor());
         textAttributes.setFontType(Font.ITALIC);
         
         // 获取当前编辑器信息

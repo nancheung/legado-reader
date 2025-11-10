@@ -52,8 +52,9 @@ public class SettingFactory implements SearchableConfigurable {
         Data.enableErrorLog = settingsManager.isEnableErrorLog();
 
         // 更新 UI
-        IndexUI.getInstance().getTextBodyPane().setForeground(new JBColor(Data.textBodyFontColor, Data.textBodyFontColor));
-        IndexUI.getInstance().getTextBodyPane().setFont(Data.textBodyFont);
+        java.awt.Color fontColor = settingsManager.getTextBodyFontColor();
+        IndexUI.getInstance().getTextBodyPane().setForeground(new JBColor(fontColor, fontColor));
+        IndexUI.getInstance().getTextBodyPane().setFont(settingsManager.getTextBodyFont());
     }
 
     public static SettingUI instance() {
