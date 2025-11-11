@@ -122,4 +122,29 @@ public final class PluginSettingsManager {
     public boolean isEnableShowBodyInLine() {
         return Boolean.TRUE.equals(currentSettings.enableShowBodyInLine());
     }
+
+    /**
+     * 切换阅读模式显示/隐藏
+     * 全局开关，同时影响 ToolWindow 和 EditorLine 两种阅读模式
+     *
+     * @return 切换后的状态（true=启用，false=禁用）
+     */
+    public boolean toggleReadingMode() {
+        PluginSettingsData current = getSettings();
+        boolean newState = !Boolean.TRUE.equals(current.enableShowBodyInLine());
+
+        // 创建新的设置数据
+        PluginSettingsData updated = new PluginSettingsData(
+                current.textBodyFontColorRgb(),
+                current.textBodyFontSize(),
+                current.apiCustomParam(),
+                current.enableErrorLog(),
+                newState  // 切换状态
+        );
+
+        // 保存设置
+        saveSettings(updated);
+
+        return newState;
+    }
 }

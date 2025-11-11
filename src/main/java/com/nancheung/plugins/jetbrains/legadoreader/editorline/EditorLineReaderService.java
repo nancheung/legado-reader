@@ -1,16 +1,20 @@
 package com.nancheung.plugins.jetbrains.legadoreader.editorline;
 
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
+import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
+import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.BodyInLineDataManager;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 编辑器行内阅读服务
@@ -21,6 +25,7 @@ public class EditorLineReaderService implements IReader {
 
     /**
      * 上一页
+     * 如果已经是第一页，则自动切换到上一章的最后一页
      */
     @Override
     public void previousPage() {
@@ -28,40 +33,28 @@ public class EditorLineReaderService implements IReader {
         BodyInLineDataManager.LineData currentLine = dataManager.getCurrentLine();
 
         if (currentLine == null) {
-            log.debug("当前页为空，无法翻到上一页");
-            return;
-        }
-
-        List<BodyInLineDataManager.LineData> lineContentList = dataManager.getLineContentList();
-        if (lineContentList == null || lineContentList.isEmpty()) {
-            log.warn("分页列表为空");
+            log.debug("当前页为空");
             return;
         }
 
         int currentLineIndex = currentLine.getLineIndex();
 
-        // 如果不是第一页，则翻到上一页
         if (currentLineIndex > 0) {
+            // 不是第一页，正常翻页
+            List<BodyInLineDataManager.LineData> lineContentList = dataManager.getLineContentList();
             dataManager.setCurrentLine(lineContentList.get(currentLineIndex - 1));
-            log.debug("翻到上一页: " + (currentLineIndex));
-
-            // 触发 UI 刷新
             refreshEditor();
+            log.debug("翻到上一页: {}", currentLineIndex);
         } else {
-            log.debug("已经是第一页，无法继续翻页");
+            // 第一页，自动切换到上一章
+            log.debug("已经是第一页，尝试切换到上一章");
+            previousChapter();
         }
-
-        // 判断当前行小于总行数的50%，则可以预载上一章
-        if (currentLineIndex < lineContentList.size() * DEFAULT_LOAD_FACTOR) {
-            // TODO: 预载上一章（暂未实现）
-            log.debug("可以预载上一章（功能未实现）");
-        }
-
-
     }
 
     /**
      * 下一页
+     * 如果已经是最后一页，则自动切换到下一章的第一页
      */
     @Override
     public void nextPage() {
@@ -69,64 +62,134 @@ public class EditorLineReaderService implements IReader {
         BodyInLineDataManager.LineData currentLine = dataManager.getCurrentLine();
 
         if (currentLine == null) {
-            log.debug("当前页为空，无法翻到下一页");
+            log.debug("当前页为空");
             return;
         }
 
         List<BodyInLineDataManager.LineData> lineContentList = dataManager.getLineContentList();
-        if (lineContentList == null || lineContentList.isEmpty()) {
-            log.warn("分页列表为空");
-            return;
-        }
-
         int currentLineIndex = currentLine.getLineIndex();
 
-        // 如果不是最后一页，则翻到下一页
         if (currentLineIndex < lineContentList.size() - 1) {
+            // 不是最后一页，正常翻页
             dataManager.setCurrentLine(lineContentList.get(currentLineIndex + 1));
-            log.debug("翻到下一页: " + (currentLineIndex + 2));
-
-            // 触发 UI 刷新
             refreshEditor();
+            log.debug("翻到下一页: {}", currentLineIndex + 2);
         } else {
-            log.debug("已经是最后一页，无法继续翻页");
+            // 最后一页，自动切换到下一章
+            log.debug("已经是最后一页，尝试切换到下一章");
+            nextChapter();
         }
-
-        // 判断当前行大于总行数的50%，则可以预载下一章
-        if (currentLineIndex > lineContentList.size() * DEFAULT_LOAD_FACTOR) {
-            // TODO: 预载下一章（暂未实现）
-            log.debug("可以预载下一章（功能未实现）");
-        }
-
-
     }
 
     /**
      * 上一章
-     * 注意：此功能暂未实现，仅保留接口
+     * 自动定位到上一章的最后一页
      */
     @Override
     public void previousChapter() {
-        log.warn("上一章功能暂未实现");
-        // TODO: 实现上一章切换逻辑
-        // 1. 从 ReadingSessionManager 获取上一章信息
-        // 2. 调用 API 获取上一章内容
-        // 3. 更新 ReadingSessionManager 和 BodyInLineDataManager
-        // 4. 刷新 UI
+        ReadingSessionManager sessionManager = ReadingSessionManager.getInstance();
+        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
+
+        // 边界检测：第一章
+        if (sessionManager.getCurrentChapterIndex() < 1) {
+            log.debug("已经是第一章");
+            return;
+        }
+
+        // 更新章节索引
+        sessionManager.previousChapter();
+
+        // 获取章节信息
+        BookDTO book = sessionManager.getCurrentBook();
+        BookChapterDTO chapter = sessionManager.getCurrentChapter();
+
+        if (book == null || chapter == null) {
+            log.error("获取章节信息失败");
+            sessionManager.nextChapter(); // 回滚
+            return;
+        }
+
+        // 异步获取新章节内容
+        CompletableFuture.supplyAsync(() ->
+                ApiUtil.getBookContent(book.getBookUrl(), sessionManager.getCurrentChapterIndex())
+        )
+        .thenAccept(content -> {
+            // 更新内容
+            sessionManager.setContent(content);
+
+            // 重新分页
+            dataManager.initCurrent(content);
+
+            // 定位到最后一页
+            List<BodyInLineDataManager.LineData> pages = dataManager.getLineContentList();
+            if (!pages.isEmpty()) {
+                dataManager.setCurrentLine(pages.get(pages.size() - 1));
+            }
+
+            // 刷新 UI
+            refreshEditor();
+
+            log.info("切换到上一章：{}", chapter.getTitle());
+        })
+        .exceptionally(throwable -> {
+            log.error("获取章节内容失败", throwable);
+            // 回滚索引
+            sessionManager.nextChapter();
+            return null;
+        });
     }
 
     /**
      * 下一章
-     * 注意：此功能暂未实现，仅保留接口
+     * 自动定位到下一章的第一页
      */
     @Override
     public void nextChapter() {
-        log.warn("下一章功能暂未实现");
-        // TODO: 实现下一章切换逻辑
-        // 1. 从 ReadingSessionManager 获取下一章信息
-        // 2. 调用 API 获取下一章内容
-        // 3. 更新 ReadingSessionManager 和 BodyInLineDataManager
-        // 4. 刷新 UI
+        ReadingSessionManager sessionManager = ReadingSessionManager.getInstance();
+        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
+
+        // 边界检测：最后一章
+        List<BookChapterDTO> chapters = sessionManager.getChapters();
+        if (chapters == null || sessionManager.getCurrentChapterIndex() >= chapters.size() - 1) {
+            log.debug("已经是最后一章");
+            return;
+        }
+
+        // 更新章节索引
+        sessionManager.nextChapter();
+
+        // 获取章节信息
+        BookDTO book = sessionManager.getCurrentBook();
+        BookChapterDTO chapter = sessionManager.getCurrentChapter();
+
+        if (book == null || chapter == null) {
+            log.error("获取章节信息失败");
+            sessionManager.previousChapter(); // 回滚
+            return;
+        }
+
+        // 异步获取新章节内容
+        CompletableFuture.supplyAsync(() ->
+                ApiUtil.getBookContent(book.getBookUrl(), sessionManager.getCurrentChapterIndex())
+        )
+        .thenAccept(content -> {
+            // 更新内容
+            sessionManager.setContent(content);
+
+            // 重新分页（自动定位到第一页）
+            dataManager.initCurrent(content);
+
+            // 刷新 UI
+            refreshEditor();
+
+            log.info("切换到下一章：{}", chapter.getTitle());
+        })
+        .exceptionally(throwable -> {
+            log.error("获取章节内容失败", throwable);
+            // 回滚索引
+            sessionManager.previousChapter();
+            return null;
+        });
     }
 
     /**

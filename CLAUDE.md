@@ -175,3 +175,4 @@ API 端点定义在 `AddressEnum` 中：
 9. **gradle 配置**：
    - 依赖使用 version_catalogs管理，版本号在 [libs.versions.toml](gradle/libs.versions.toml) 定义
    - 
+- 项目中使用了lombok，对于日志、构造函数等模板代码，可使用lombok特性

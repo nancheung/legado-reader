@@ -16,8 +16,6 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 /**
  * 编辑器行内阅读渲染器
@@ -27,12 +25,6 @@ import java.util.WeakHashMap;
  */
 @Slf4j
 public class ReaderEditorLinePainter extends EditorLinePainter {
-
-    /**
-     * 使用 WeakHashMap 避免内存泄漏
-     * 当 Editor 被关闭后，会自动从 Map 中移除
-     */
-    private static final Set<Editor> EDITORS = Collections.newSetFromMap(new WeakHashMap<>());
 
     /**
      * 缓存 Editor 实例，避免高频调用 getSelectedTextEditor()
@@ -56,14 +48,6 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
         Editor editor = getCachedEditor(project);
         if (editor == null) {
             return null;
-        }
-
-        // 如果当前编辑器未注册鼠标监听器，则添加
-        // WeakHashMap 会自动清理已关闭的编辑器
-        if (!EDITORS.contains(editor)) {
-            editor.addEditorMouseListener(new SwitchLineMouseListener());
-            EDITORS.add(editor);
-            log.debug("为编辑器添加鼠标监听器");
         }
 
         // 只在当前光标所在行显示

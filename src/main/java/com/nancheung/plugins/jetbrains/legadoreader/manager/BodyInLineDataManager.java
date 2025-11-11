@@ -5,6 +5,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.diagnostic.Logger;
 import lombok.Data;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,9 +17,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * 行内阅读数据管理器
  * 线程安全的 Application Service，用于管理编辑器行内阅读的分页数据
  */
+@Slf4j
 @Service
 public final class BodyInLineDataManager {
-    private static final Logger LOG = Logger.getInstance(BodyInLineDataManager.class);
     private static final int DEFAULT_LINE_MAX_LENGTH = 30;
 
     /**
@@ -31,13 +33,17 @@ public final class BodyInLineDataManager {
     private final AtomicReference<List<LineData>> lineContentList = new AtomicReference<>(Collections.emptyList());
 
     /**
-     * 当前章节的完整正文内容，用于内容变更检测
+     * 当前章节的完整正文内容，可能为 null，用于内容变更检测
+     *
      */
+    @Getter
     private volatile String bodyContent;
 
     /**
      * 每页最大字符数
+     *
      */
+    @Getter
     private volatile int lineMaxLength = DEFAULT_LINE_MAX_LENGTH;
 
     public static BodyInLineDataManager getInstance() {
@@ -56,19 +62,19 @@ public final class BodyInLineDataManager {
 
             // 内容为空时返回 null
             if (StrUtil.isEmpty(currentContent)) {
-                LOG.debug("当前章节内容为空");
+                log.debug("当前章节内容为空");
                 return null;
             }
 
             // 检测内容是否变化，如果变化则重新初始化
             if (currentLine.get() == null || !currentContent.equals(bodyContent)) {
-                LOG.debug("检测到内容变化，重新初始化分页");
+                log.debug("检测到内容变化，重新初始化分页");
                 initCurrent(currentContent);
             }
 
             return currentLine.get();
         } catch (Exception e) {
-            LOG.error("获取当前页失败", e);
+            log.error("获取当前页失败", e);
             return null;
         }
     }
@@ -81,7 +87,7 @@ public final class BodyInLineDataManager {
     public void setCurrentLine(LineData line) {
         if (line != null) {
             currentLine.set(line);
-            LOG.debug("切换到第 " + (line.getLineIndex() + 1) + " 页");
+            log.debug("切换到第 " + (line.getLineIndex() + 1) + " 页");
         }
     }
 
@@ -96,15 +102,6 @@ public final class BodyInLineDataManager {
     }
 
     /**
-     * 获取当前章节的完整正文内容
-     *
-     * @return 完整正文，可能为 null
-     */
-    public String getBodyContent() {
-        return bodyContent;
-    }
-
-    /**
      * 设置每页最大字符数
      *
      * @param length 字符数，必须大于 0
@@ -112,17 +109,8 @@ public final class BodyInLineDataManager {
     public void setLineMaxLength(int length) {
         if (length > 0) {
             this.lineMaxLength = length;
-            LOG.debug("设置每页最大字符数为 " + length);
+            log.debug("设置每页最大字符数为 " + length);
         }
-    }
-
-    /**
-     * 获取每页最大字符数
-     *
-     * @return 字符数
-     */
-    public int getLineMaxLength() {
-        return lineMaxLength;
     }
 
     /**
@@ -136,7 +124,7 @@ public final class BodyInLineDataManager {
             bodyContent = content;
 
             if (StrUtil.isEmpty(content)) {
-                LOG.warn("初始化失败：章节内容为空");
+                log.warn("初始化失败：章节内容为空");
                 lineContentList.set(Collections.emptyList());
                 currentLine.set(null);
                 return;
@@ -149,13 +137,13 @@ public final class BodyInLineDataManager {
             // 设置第一页为当前页
             if (!pages.isEmpty()) {
                 currentLine.set(pages.get(0));
-                LOG.info("章节分页完成，共 " + pages.size() + " 页");
+                log.info("章节分页完成，共 " + pages.size() + " 页");
             } else {
                 currentLine.set(null);
-                LOG.warn("分页结果为空");
+                log.warn("分页结果为空");
             }
         } catch (Exception e) {
-            LOG.error("初始化分页数据失败", e);
+            log.error("初始化分页数据失败", e);
             lineContentList.set(Collections.emptyList());
             currentLine.set(null);
         }
@@ -173,7 +161,7 @@ public final class BodyInLineDataManager {
      * 将完整章节内容按固定长度分页
      * 改进版：正确处理 Unicode 代理对（如 emoji）
      *
-     * @param body 完整章节内容
+     * @param body      完整章节内容
      * @param maxLength 每页最大字符数
      * @return 分页列表
      */
@@ -194,7 +182,7 @@ public final class BodyInLineDataManager {
             // 高代理（High Surrogate）范围：U+D800 到 U+DBFF
             if (end < body.length() && Character.isHighSurrogate(body.charAt(end - 1))) {
                 end--;
-                LOG.debug("检测到 Unicode 代理对，调整分页位置");
+                log.debug("检测到 Unicode 代理对，调整分页位置");
             }
 
             // 提取本页内容
@@ -224,7 +212,7 @@ public final class BodyInLineDataManager {
         currentLine.set(null);
         lineContentList.set(Collections.emptyList());
         bodyContent = null;
-        LOG.debug("清空行内阅读数据");
+        log.debug("清空行内阅读数据");
     }
 
     /**
