@@ -1,7 +1,6 @@
 package com.nancheung.plugins.jetbrains.legadoreader.toolwindow;
 
 import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 
 public class ToolWindowReaderService implements IReader {
 
@@ -18,24 +17,14 @@ public class ToolWindowReaderService implements IReader {
 
     @Override
     public void previousChapter() {
-        // 第一章无法继续上一章
-        if (ReadingSessionManager.getInstance().getCurrentChapterIndex() < 1) {
-            return;
-        }
-
-        // 更新索引
-        ReadingSessionManager.getInstance().previousChapter();
-
-
-        indexUI.switchChapter(0);
+        // ReaderGlobalFacade 已完成数据操作，这里只刷新 UI
+        indexUI.refreshTextBodyPanel();
     }
 
     @Override
     public void nextChapter() {
-        // 更新索引
-        ReadingSessionManager.getInstance().nextChapter();
-
-        indexUI.switchChapter(0);
+        // ReaderGlobalFacade 已完成数据操作，这里只刷新 UI
+        indexUI.refreshTextBodyPanel();
     }
     
     @Override

@@ -349,6 +349,28 @@ public class IndexUI {
         CompletableFuture.runAsync(() -> ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), ReadingSessionManager.getInstance().getCurrentChapterIndex(), title, durChapterPos));
     }
 
+    /**
+     * 刷新正文面板（用于章节切换时的 UI 更新）
+     * ReaderGlobalFacade 已完成数据操作，此方法只负责 UI 刷新
+     */
+    public void refreshTextBodyPanel() {
+        ReadingSessionManager sessionManager = ReadingSessionManager.getInstance();
+
+        // 1. 获取数据（Facade 已更新）
+        String content = sessionManager.getCurrentContent();
+        String title = sessionManager.getCurrentChapter().getTitle();
+
+        // 2. 更新 UI（需要在 EDT 线程中执行）
+        SwingUtilities.invokeLater(() -> {
+            // 初始化 UI
+            initTextBodyUI();
+
+            // 设置正文内容
+            textBodyPane.setText(title + "\n" + content);
+            textBodyPane.setCaretPosition(0);
+        });
+    }
+
     private void showErrorTips(JScrollPane textBodyScrollPane, JTextPane textBodyErrorTipsPane) {
         textBodyScrollPane.setVisible(false);
         textBodyErrorTipsPane.setVisible(true);
