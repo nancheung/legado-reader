@@ -100,7 +100,10 @@ public class IndexUI {
 
     public static final DefaultComboBoxModel<String> ADDRESS_HISTORY_BOX_MODEL = new DefaultComboBoxModel<>();
 
-    private static final IndexUI INSTANCE = new IndexUI();
+    /**
+     * 单例实例，延迟初始化避免类加载时访问 Service
+     */
+    private static IndexUI INSTANCE;
 
     /**
      * 书架目录（临时存储在内存）
@@ -171,8 +174,8 @@ public class IndexUI {
         // 设置书架面板的表格数据格式
         addressHistoryBox.setModel(ADDRESS_HISTORY_BOX_MODEL);
 
-        // 设置书架面板的ip输入框及历史记录
-        setAddressUI();
+        // 注意：不在初始化时调用 setAddressUI()，避免访问 Service
+        // 将在 initAddressHistory() 中延迟调用
 
         // 设置书架面板的表格数据格式
         bookshelfTable.setModel(IndexUI.BOOK_SHELF_TABLE_MODEL);
@@ -183,6 +186,9 @@ public class IndexUI {
         // 创建action bar
         final ActionManager actionManager = ActionManager.getInstance();
         ActionToolbar actionToolbar = actionManager.createActionToolbar(Constant.PLUGIN_TOOL_BAR_ID, (DefaultActionGroup) actionManager.getAction(Constant.PLUGIN_TOOL_BAR_ID), true);
+
+        // 显式设置 TargetComponent，确保 actions 在正确的上下文中更新
+        actionToolbar.setTargetComponent(textBodyPane);
 
         // 将bar添加至ui
         bar.add(actionToolbar.getComponent());
@@ -371,7 +377,13 @@ public class IndexUI {
         return rootPanel;
     }
 
+    /**
+     * 获取单例实例（懒加载）
+     */
     public static IndexUI getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new IndexUI();
+        }
         return INSTANCE;
     }
 
@@ -387,5 +399,13 @@ public class IndexUI {
             return null;
         }
         return bookshelf.get(BOOK_MAP_KEY_FUNC.apply(author, name));
+    }
+
+    /**
+     * 初始化地址历史记录
+     * 在 ToolWindow 首次显示时调用，延迟访问 Service
+     */
+    public void initAddressHistory() {
+        setAddressUI();
     }
 }

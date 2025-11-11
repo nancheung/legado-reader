@@ -16,7 +16,10 @@ public class SettingFactory implements SearchableConfigurable {
 
     private final static String DISPLAY_NAME = "Legado Reader";
 
-    private final static SettingUI SETTING_UI = new SettingUI();
+    /**
+     * SettingUI 实例（懒加载，避免在类加载时访问服务）
+     */
+    private static SettingUI settingUI;
 
     @Override
     public @NotNull String getId() {
@@ -30,7 +33,7 @@ public class SettingFactory implements SearchableConfigurable {
 
     @Override
     public @Nullable JComponent createComponent() {
-        return SETTING_UI.getComponent();
+        return instance().getComponent();
     }
 
     @Override
@@ -41,7 +44,7 @@ public class SettingFactory implements SearchableConfigurable {
     @Override
     public void apply() {
         // 保存设置
-        SETTING_UI.saveSettings();
+        instance().saveSettings();
 
         // 更新 UI
         PluginSettingsManager settingsManager = PluginSettingsManager.getInstance();
@@ -50,7 +53,16 @@ public class SettingFactory implements SearchableConfigurable {
         IndexUI.getInstance().getTextBodyPane().setFont(settingsManager.getTextBodyFont());
     }
 
+    /**
+     * 获取 SettingUI 实例（懒加载）
+     * 只在用户打开设置页面时才创建实例，避免在类加载时访问服务
+     *
+     * @return SettingUI 实例
+     */
     public static SettingUI instance() {
-        return SETTING_UI;
+        if (settingUI == null) {
+            settingUI = new SettingUI();
+        }
+        return settingUI;
     }
 }

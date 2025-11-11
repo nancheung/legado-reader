@@ -1,6 +1,7 @@
 package com.nancheung.plugins.jetbrains.legadoreader.action;
 
 import cn.hutool.core.collection.CollUtil;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
@@ -11,6 +12,12 @@ public class ShowBookInfoAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        // 使用后台线程更新，因为只访问 Service，不访问 UI 组件
+        return ActionUpdateThread.BGT;
     }
 
     @Override
