@@ -1,24 +1,50 @@
 package com.nancheung.plugins.jetbrains.legadoreader.storage;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
-import com.intellij.openapi.diagnostic.Logger;
-import com.nancheung.plugins.jetbrains.legadoreader.model.AddressHistoryData;
+import com.intellij.openapi.components.State;
+import com.intellij.openapi.components.Storage;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 地址历史存储服务（Application Service）
- * 负责地址历史的 JSON 序列化和持久化
+ * 使用 IntelliJ Platform 的 PersistentStateComponent 进行持久化
  *
  * @author NanCheung
  */
 @Service
-public final class AddressHistoryStorage {
+@State(name = "LegadoReaderAddressHistory",storages = @Storage("nancheung-legadoReader-addressHistory.xml"))
+public final class AddressHistoryStorage implements PersistentStateComponent<AddressHistoryStorage.State> {
 
-    private static final Logger log = Logger.getInstance(AddressHistoryStorage.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    /**
+     * 内部状态类，用于 XML 序列化
+     * PersistentStateComponent 框架会自动检测字段变化并持久化
+     */
+    public static class State {
+        public List<HistoryItemState> items = new ArrayList<>();
+    }
+
+    /**
+     * 历史记录项状态类
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class HistoryItemState {
+        public String address;
+        public long lastAccessTime;
+    }
+
+    private State state = new State();
 
     /**
      * 获取服务实例
@@ -29,36 +55,67 @@ public final class AddressHistoryStorage {
         return ApplicationManager.getApplication().getService(AddressHistoryStorage.class);
     }
 
+    @Nullable
+    @Override
+    public State getState() {
+        return state;
+    }
+
+    @Override
+    public void loadState(@NotNull State state) {
+        this.state = state;
+    }
+
     /**
-     * 保存历史记录到持久化存储
-     *
-     * @param data 历史记录数据
+     * 历史记录最大保存数量
      */
-    public void save(AddressHistoryData data) {
-        try {
-            String json = objectMapper.writeValueAsString(data);
-            PropertiesComponent.getInstance().setValue(StorageKeys.ADDRESS_HISTORY, json);
-        } catch (JsonProcessingException e) {
-            log.error("保存地址历史失败", e);
+    public static final int MAX_SIZE = 4;
+
+
+    /**
+     * 添加地址到历史记录
+     * 自动去重、排序、限制数量
+     *
+     * @param address 地址
+     */
+    public void addAddress(String address) {
+        if (address == null || address.isEmpty()) {
+            return;
+        }
+
+        State currentState = getState();
+
+        // 移除已存在的相同地址
+        currentState.items.removeIf(item -> item.address.equals(address));
+
+        // 添加到最前面
+        HistoryItemState newItem = new HistoryItemState(address, System.currentTimeMillis());
+        currentState.items.addFirst(newItem);
+
+        // 限制数量
+        if (currentState.items.size() > MAX_SIZE) {
+            currentState.items.removeLast();
         }
     }
 
     /**
-     * 从持久化存储加载历史记录
+     * 获取地址列表（按时间倒序）
      *
-     * @return 历史记录数据，如果加载失败则返回空列表
+     * @return 地址列表
      */
-    public AddressHistoryData load() {
-        String json = PropertiesComponent.getInstance().getValue(StorageKeys.ADDRESS_HISTORY);
-        if (json == null || json.isEmpty()) {
-            return AddressHistoryData.empty();
-        }
+    public List<String> getAddressList() {
+        return getState().items.stream()
+                .map(item -> item.address)
+                .collect(Collectors.toList());
+    }
 
-        try {
-            return objectMapper.readValue(json, AddressHistoryData.class);
-        } catch (JsonProcessingException e) {
-            log.warn("加载地址历史失败，使用空列表", e);
-            return AddressHistoryData.empty();
-        }
+    /**
+     * 获取最近使用的地址
+     *
+     * @return 最近使用的地址，如果没有则返回 null
+     */
+    public String getMostRecent() {
+        List<HistoryItemState> items = getState().items;
+        return items.isEmpty() ? null : items.getFirst().address;
     }
 }

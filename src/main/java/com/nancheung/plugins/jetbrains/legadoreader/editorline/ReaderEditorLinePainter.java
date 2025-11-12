@@ -8,7 +8,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.BodyInLineDataManager;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +40,7 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
             int lineNumber) {
 
         // 判断是否启用了行内阅读
-        if (!PluginSettingsManager.getInstance().isEnableShowBodyInLine()) {
+        if (!PluginSettingsStorage.getInstance().getState().enableShowBodyInLine) {
             return null;
         }
 
@@ -71,7 +71,7 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
 
         // 设置文本样式
         TextAttributes textAttributes = new TextAttributes();
-        textAttributes.setForegroundColor(PluginSettingsManager.getInstance().getTextBodyFontColor());
+        textAttributes.setForegroundColor(PluginSettingsStorage.getInstance().getTextBodyFontColor());
         textAttributes.setFontType(Font.ITALIC);
 
         return Collections.singleton(new LineExtensionInfo(displayText, textAttributes));

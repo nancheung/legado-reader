@@ -10,7 +10,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,8 +24,8 @@ public class ToggleReadingModeAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         // 切换阅读模式状态
-        PluginSettingsManager manager = PluginSettingsManager.getInstance();
-        boolean newState = manager.toggleReadingMode();
+        PluginSettingsStorage storage = PluginSettingsStorage.getInstance();
+        boolean newState = storage.toggleReadingMode();
 
         log.info("阅读模式已{}", newState ? "启用" : "禁用");
 

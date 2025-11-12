@@ -9,8 +9,8 @@ import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.AddressHistoryManager;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.AddressHistoryStorage;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSession;
 import lombok.Getter;
@@ -148,7 +148,7 @@ public class IndexUI {
                 }).exceptionally(throwable -> {
                     showErrorTips(bookshelfScrollPane, bookshelfErrorTipsPane);
 
-                    if (PluginSettingsManager.getInstance().isEnableErrorLog()) {
+                    if (Boolean.TRUE.equals(PluginSettingsStorage.getInstance().getState().enableErrorLog)) {
                         log.error("获取书架列表失败", throwable.getCause());
                     }
 
@@ -202,7 +202,7 @@ public class IndexUI {
             // 设置按钮不可点击，防止多次点击
             refreshBookshelfButton.setEnabled(false);
 
-            AddressHistoryManager.getInstance().addAddress(addressTextField.getText());
+            AddressHistoryStorage.getInstance().addAddress(addressTextField.getText());
 
             setAddressUI();
 
@@ -257,7 +257,7 @@ public class IndexUI {
                         }).exceptionally(throwable -> {
                             showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
 
-                            if (PluginSettingsManager.getInstance().isEnableErrorLog()) {
+                            if (Boolean.TRUE.equals(PluginSettingsStorage.getInstance().getState().enableErrorLog)) {
                                 log.error("获取章节列表失败", throwable.getCause());
                             }
                             return null;
@@ -301,9 +301,9 @@ public class IndexUI {
 
     private void initTextBodyUI() {
         // 设置正文面板的字体
-        Color fontColor = PluginSettingsManager.getInstance().getTextBodyFontColor();
+        Color fontColor = PluginSettingsStorage.getInstance().getTextBodyFontColor();
         textBodyPane.setForeground(new JBColor(fontColor, fontColor));
-        textBodyPane.setFont(PluginSettingsManager.getInstance().getTextBodyFont());
+        textBodyPane.setFont(PluginSettingsStorage.getInstance().getTextBodyFont());
         // 设置加载中的提示
         textBodyPane.setText("加载中...");
 
@@ -338,7 +338,7 @@ public class IndexUI {
                 }).exceptionally(throwable -> {
                     showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
 
-                    if (PluginSettingsManager.getInstance().isEnableErrorLog()) {
+                    if (PluginSettingsStorage.getInstance().getState().enableErrorLog) {
                         log.error("获取正文内容失败", throwable.getCause());
                     }
 
@@ -377,7 +377,7 @@ public class IndexUI {
     }
 
     private void setAddressUI() {
-        List<String> addressHistoryList = AddressHistoryManager.getInstance().getAddressList();
+        List<String> addressHistoryList = AddressHistoryStorage.getInstance().getAddressList();
         // 设置书架面板的ip输入框的历史记录
         ADDRESS_HISTORY_BOX_MODEL.removeAllElements();
         ADDRESS_HISTORY_BOX_MODEL.addAll(addressHistoryList);

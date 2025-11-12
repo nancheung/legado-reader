@@ -4,7 +4,7 @@ import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.ui.SettingUI;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.PluginSettingsManager;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import com.nancheung.plugins.jetbrains.legadoreader.toolwindow.IndexUI;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -44,13 +44,13 @@ public class SettingFactory implements SearchableConfigurable {
     @Override
     public void apply() {
         // 保存设置
-        instance().saveSettings();
+        saveSettings();
 
         // 更新 UI
-        PluginSettingsManager settingsManager = PluginSettingsManager.getInstance();
-        java.awt.Color fontColor = settingsManager.getTextBodyFontColor();
+        PluginSettingsStorage storage = PluginSettingsStorage.getInstance();
+        java.awt.Color fontColor = storage.getTextBodyFontColor();
         IndexUI.getInstance().getTextBodyPane().setForeground(new JBColor(fontColor, fontColor));
-        IndexUI.getInstance().getTextBodyPane().setFont(settingsManager.getTextBodyFont());
+        IndexUI.getInstance().getTextBodyPane().setFont(storage.getTextBodyFont());
     }
 
     /**
@@ -62,7 +62,21 @@ public class SettingFactory implements SearchableConfigurable {
     public static SettingUI instance() {
         if (settingUI == null) {
             settingUI = new SettingUI();
+
+            // 读取已有配置
+            settingUI.readSettings(PluginSettingsStorage.getInstance().getState());
         }
         return settingUI;
+    }
+
+    public void saveSettings() {
+        SettingUI ui = instance();
+        // 直接修改 State 字段，框架会自动持久化
+        PluginSettingsStorage.State state = PluginSettingsStorage.getInstance().getState();
+        state.textBodyFontColorRgb = ui.getTextBodyFontColorLabel().getForeground().getRGB();
+        state.textBodyFontSize = (int) ui.getTextBodyFontSizeSpinner().getValue();
+        state.apiCustomParam = ui.getApiCustomParamTextArea().getText();
+        state.enableErrorLog = ui.getEnableErrorLogCheckBox().isSelected();
+        state.enableShowBodyInLine = ui.getEnableInLineModelCheckBox().isSelected();
     }
 }
