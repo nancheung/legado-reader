@@ -16,18 +16,6 @@ public class ToolWindowReaderService implements IReader {
     }
 
     @Override
-    public void previousChapter() {
-        // ReaderGlobalFacade 已完成数据操作，这里只刷新 UI
-        indexUI.refreshTextBodyPanel();
-    }
-
-    @Override
-    public void nextChapter() {
-        // ReaderGlobalFacade 已完成数据操作，这里只刷新 UI
-        indexUI.refreshTextBodyPanel();
-    }
-    
-    @Override
     public void splitChapter(String chapterContent, int pageSize) {
     
     }

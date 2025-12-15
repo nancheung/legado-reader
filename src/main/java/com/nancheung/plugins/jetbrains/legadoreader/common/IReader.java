@@ -15,22 +15,12 @@ public interface IReader {
      * 上一页
      */
     void previousPage();
-    
+
     /**
      * 下一页
      */
     void nextPage();
-    
-    /**
-     * 上一章
-     */
-    void previousChapter();
-    
-    /**
-     * 下一章
-     */
-    void nextChapter();
-    
+
     /**
      * 将整章内容分页
      *

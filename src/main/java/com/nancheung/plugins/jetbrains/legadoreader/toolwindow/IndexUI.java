@@ -3,17 +3,22 @@ package com.nancheung.plugins.jetbrains.legadoreader.toolwindow;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
+import com.nancheung.plugins.jetbrains.legadoreader.common.ReadingEvent;
+import com.nancheung.plugins.jetbrains.legadoreader.common.ReadingEventListener;
+import com.nancheung.plugins.jetbrains.legadoreader.common.ReaderGlobalFacade;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.AddressHistoryStorage;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSession;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -29,10 +34,40 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Getter
 public class IndexUI {
 
-    private static final Logger log = Logger.getInstance(IndexUI.class);
+
+    /**
+     * UI 状态枚举
+     */
+    private enum UIState {
+        /**
+         * 初始化状态
+         */
+        INITIALIZED,
+
+        /**
+         * 加载中状态
+         */
+        LOADING,
+
+        /**
+         * 加载成功状态
+         */
+        SUCCESS,
+
+        /**
+         * 加载失败状态
+         */
+        FAILED
+    }
+
+    /**
+     * 当前 UI 状态
+     */
+    private UIState currentState = UIState.INITIALIZED;
 
 
     /**
@@ -118,6 +153,12 @@ public class IndexUI {
     public IndexUI() {
         // 初始化界面设置
         initIndexUI();
+
+        // 订阅阅读事件
+        ApplicationManager.getApplication()
+                .getMessageBus()
+                .connect()
+                .subscribe(ReadingEventListener.TOPIC, (ReadingEventListener) event -> INSTANCE.onReadingEvent(event));
 
         // 初始化使用默认ip刷新书架目录
         refreshBookshelf(bookDTOS -> refreshBookshelfButton.setEnabled(true), throwable -> refreshBookshelfButton.setEnabled(true));
@@ -229,9 +270,6 @@ public class IndexUI {
                     return;
                 }
 
-                // 设置正文面板UI
-                initTextBodyUI();
-
                 // 获取当前点击的书籍信息
                 TableModel model = ((JTable) evt.getSource()).getModel();
                 String name = model.getValueAt(row, 0).toString();
@@ -240,28 +278,8 @@ public class IndexUI {
                 // 获取书籍信息
                 BookDTO book = getBook(author, name);
 
-                // 调用API获取章节列表
-                CompletableFuture.supplyAsync(() -> ApiUtil.getChapterList(book.getBookUrl()))
-                        .thenAccept(bookChapters -> {
-                            // 创建新的 ReadingSession
-                            ReadingSession session = new ReadingSession(
-                                    book,
-                                    bookChapters,
-                                    book.getDurChapterIndex(),
-                                    null  // content 初始为 null
-                            );
-                            ReadingSessionManager.getInstance().setSession(session);
-
-                            // 设置正文数据
-                            setTextBodyUIData(book.getDurChapterPos());
-                        }).exceptionally(throwable -> {
-                            showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
-
-                            if (Boolean.TRUE.equals(PluginSettingsStorage.getInstance().getState().enableErrorLog)) {
-                                log.error("获取章节列表失败", throwable.getCause());
-                            }
-                            return null;
-                        });
+                // 使用 Facade 加载章节（事件驱动）
+                ReaderGlobalFacade.getInstance().loadChapter(book, book.getDurChapterIndex());
             }
         };
     }
@@ -284,91 +302,6 @@ public class IndexUI {
             bookshelfScrollPane.setVisible(true);
             bookshelfErrorTipsPane.setVisible(false);
         }
-    }
-
-    /**
-     * 切换章节
-     *
-     * @param durChapterPos 当前在章节中的位置
-     */
-    public void switchChapter(int durChapterPos) {
-        // 设置正文面板UI
-        initTextBodyUI();
-
-        // 设置正文数据
-        setTextBodyUIData(durChapterPos);
-    }
-
-    private void initTextBodyUI() {
-        // 设置正文面板的字体
-        Color fontColor = PluginSettingsStorage.getInstance().getTextBodyFontColor();
-        textBodyPane.setForeground(new JBColor(fontColor, fontColor));
-        textBodyPane.setFont(PluginSettingsStorage.getInstance().getTextBodyFont());
-        // 设置加载中的提示
-        textBodyPane.setText("加载中...");
-
-        if (!textBodyPanel.isShowing()) {
-            textBodyPanel.setVisible(true);
-            bookshelfPanel.setVisible(false);
-        }
-
-        if (!textBodyScrollPane.isShowing()) {
-            textBodyScrollPane.setVisible(true);
-            textBodyErrorTipsPane.setVisible(false);
-        }
-
-        // 获取焦点到文本框
-        textBodyPane.requestFocus();
-    }
-
-    private void setTextBodyUIData(int durChapterPos) {
-        BookDTO book = ReadingSessionManager.getInstance().getCurrentBook();
-
-        // 获取章节标题
-        String title = ReadingSessionManager.getInstance().getCurrentChapter().getTitle();
-
-        // 调用API获取正文内容
-        CompletableFuture.supplyAsync(() -> ApiUtil.getBookContent(book.getBookUrl(), ReadingSessionManager.getInstance().getCurrentChapterIndex()))
-                .thenAccept(bookContent -> {
-                    ReadingSessionManager.getInstance().setContent(bookContent);
-
-                    // 设置正文内容
-                    textBodyPane.setText(title + "\n" + bookContent);
-                    textBodyPane.setCaretPosition(durChapterPos);
-                }).exceptionally(throwable -> {
-                    showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
-
-                    if (PluginSettingsStorage.getInstance().getState().enableErrorLog) {
-                        log.error("获取正文内容失败", throwable.getCause());
-                    }
-
-                    return null;
-                });
-
-        // 同步阅读进度
-        CompletableFuture.runAsync(() -> ApiUtil.saveBookProgress(book.getAuthor(), book.getName(), ReadingSessionManager.getInstance().getCurrentChapterIndex(), title, durChapterPos));
-    }
-
-    /**
-     * 刷新正文面板（用于章节切换时的 UI 更新）
-     * ReaderGlobalFacade 已完成数据操作，此方法只负责 UI 刷新
-     */
-    public void refreshTextBodyPanel() {
-        ReadingSessionManager sessionManager = ReadingSessionManager.getInstance();
-
-        // 1. 获取数据（Facade 已更新）
-        String content = sessionManager.getCurrentContent();
-        String title = sessionManager.getCurrentChapter().getTitle();
-
-        // 2. 更新 UI（需要在 EDT 线程中执行）
-        SwingUtilities.invokeLater(() -> {
-            // 初始化 UI
-            initTextBodyUI();
-
-            // 设置正文内容
-            textBodyPane.setText(title + "\n" + content);
-            textBodyPane.setCaretPosition(0);
-        });
     }
 
     private void showErrorTips(JScrollPane textBodyScrollPane, JTextPane textBodyErrorTipsPane) {
@@ -429,5 +362,104 @@ public class IndexUI {
      */
     public void initAddressHistory() {
         setAddressUI();
+    }
+
+    // ==================== 事件驱动的阅读功能 ====================
+
+    /**
+     * 阅读事件分发器
+     * 根据事件状态调用不同的处理方法
+     *
+     * @param event 阅读事件
+     */
+    public void onReadingEvent(ReadingEvent event) {
+        // 确保在 EDT 线程中执行 UI 更新
+        ApplicationManager.getApplication().invokeLater(() -> {
+            switch (event.status()) {
+                case LOADING_STARTED -> handleLoadingStarted(event);
+                case LOADING_SUCCESS -> handleLoadingSuccess(event);
+                case LOADING_FAILED -> handleLoadingFailed(event);
+            }
+        });
+    }
+
+    /**
+     * 处理"开始加载"事件
+     * UI 进入加载中状态，显示加载提示
+     *
+     * @param event 阅读事件
+     */
+    private void handleLoadingStarted(ReadingEvent event) {
+        currentState = UIState.LOADING;
+
+        log.info("UI 进入加载状态: book={}, chapterIndex={}",
+                event.book().getName(), event.chapter().getIndex());
+
+        // 显示正文面板
+        if (!textBodyPanel.isShowing()) {
+            textBodyPanel.setVisible(true);
+            bookshelfPanel.setVisible(false);
+        }
+
+        // 隐藏错误提示
+        if (!textBodyScrollPane.isShowing()) {
+            textBodyScrollPane.setVisible(true);
+            textBodyErrorTipsPane.setVisible(false);
+        }
+
+        // 设置加载提示
+        textBodyPane.setText("加载中...");
+
+        // 获取焦点
+        textBodyPane.requestFocus();
+    }
+
+    /**
+     * 处理"加载成功"事件
+     * UI 进入成功状态，显示章节内容
+     *
+     * @param event 阅读事件
+     */
+    private void handleLoadingSuccess(ReadingEvent event) {
+        currentState = UIState.SUCCESS;
+
+        log.info("UI 加载成功: book={}, chapter={}",
+                event.book().getName(), event.chapter().getTitle());
+
+        // 设置正文字体样式
+        Color fontColor = PluginSettingsStorage.getInstance().getTextBodyFontColor();
+        textBodyPane.setForeground(new JBColor(fontColor, fontColor));
+        textBodyPane.setFont(PluginSettingsStorage.getInstance().getTextBodyFont());
+
+        // 设置正文内容
+        String title = event.chapter().getTitle();
+        String content = event.content();
+        textBodyPane.setText(title + "\n" + content);
+
+        // 设置光标位置
+        textBodyPane.setCaretPosition(event.chapterPosition());
+    }
+
+    /**
+     * 处理"加载失败"事件
+     * UI 进入失败状态，显示错误提示
+     *
+     * @param event 阅读事件
+     */
+    private void handleLoadingFailed(ReadingEvent event) {
+        currentState = UIState.FAILED;
+
+        log.warn("UI 加载失败: book={}, chapterIndex={}, error={}",
+                event.book().getName(),
+                event.chapter().getIndex(),
+                event.error() != null ? event.error().getMessage() : "Unknown");
+
+        // 显示错误提示
+        showErrorTips(textBodyScrollPane, textBodyErrorTipsPane);
+
+        // 记录详细错误日志
+        if (Boolean.TRUE.equals(PluginSettingsStorage.getInstance().getState().enableErrorLog)) {
+            log.error("章节加载失败", event.error());
+        }
     }
 }

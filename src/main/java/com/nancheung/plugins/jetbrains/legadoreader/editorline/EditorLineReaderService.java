@@ -7,6 +7,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
+import com.nancheung.plugins.jetbrains.legadoreader.common.ReadingEvent;
+import com.nancheung.plugins.jetbrains.legadoreader.common.ReadingEventListener;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.BodyInLineDataManager;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +18,57 @@ import java.util.List;
 /**
  * 编辑器行内阅读服务
  * 实现 IReader 接口，提供翻页等阅读操作
+ * 订阅 ReadingEventListener，监听章节切换事件以触发重新分页
  */
 @Slf4j
 public class EditorLineReaderService implements IReader {
+
+    /**
+     * 构造函数
+     * 订阅阅读事件，当章节切换时自动重新分页
+     */
+    public EditorLineReaderService() {
+        // 订阅事件
+        ApplicationManager.getApplication()
+                .getMessageBus()
+                .connect()
+                .subscribe(ReadingEventListener.TOPIC, (ReadingEventListener) this::onReadingEvent);
+    }
+
+    /**
+     * 处理阅读事件
+     * 当章节加载成功时，重新分页并定位页码
+     *
+     * @param event 阅读事件
+     */
+    private void onReadingEvent(ReadingEvent event) {
+        if (event.status() == ReadingEvent.Status.LOADING_SUCCESS) {
+            BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
+
+            // 获取内容并重新分页
+            String content = event.content();
+            dataManager.initCurrent(content);
+
+            // 根据方向定位页码
+            List<BodyInLineDataManager.LineData> pages = dataManager.getLineContentList();
+            if (!pages.isEmpty()) {
+                if (event.direction() == ReadingEvent.Direction.PREVIOUS) {
+                    // 上一章，定位到最后一页
+                    dataManager.setCurrentLine(pages.get(pages.size() - 1));
+                    log.debug("上一章，定位到最后一页");
+                } else {
+                    // 下一章或跳转，定位到第一页
+                    dataManager.setCurrentLine(pages.get(0));
+                    log.debug("下一章或跳转，定位到第一页");
+                }
+            }
+
+            // 刷新编辑器
+            refreshEditor();
+
+            log.info("EditorLine 事件处理完成：{}", event.chapter().getTitle());
+        }
+    }
 
     /**
      * 上一页（页内翻页，不跨章节）
@@ -70,56 +120,6 @@ public class EditorLineReaderService implements IReader {
             log.debug("翻到下一页: {}", currentLineIndex + 2);
         }
         // 如果是最后一页，由 ReaderGlobalFacade 调用 nextChapter()
-    }
-
-    /**
-     * 上一章（UI 更新逻辑，数据操作由 ReaderGlobalFacade 完成）
-     * 自动定位到上一章的最后一页
-     */
-    @Override
-    public void previousChapter() {
-        ReadingSessionManager sessionManager = ReadingSessionManager.getInstance();
-        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
-
-        // ReaderGlobalFacade 已完成数据操作，这里只处理 UI 差异
-        String content = sessionManager.getCurrentContent();
-        BookChapterDTO chapter = sessionManager.getCurrentChapter();
-
-        // 重新分页
-        dataManager.initCurrent(content);
-
-        // 定位到最后一页
-        List<BodyInLineDataManager.LineData> pages = dataManager.getLineContentList();
-        if (!pages.isEmpty()) {
-            dataManager.setCurrentLine(pages.get(pages.size() - 1));
-        }
-
-        // 刷新 UI
-        refreshEditor();
-
-        log.info("UI 更新完成 - 上一章：{}", chapter != null ? chapter.getTitle() : "未知");
-    }
-
-    /**
-     * 下一章（UI 更新逻辑，数据操作由 ReaderGlobalFacade 完成）
-     * 自动定位到下一章的第一页
-     */
-    @Override
-    public void nextChapter() {
-        ReadingSessionManager sessionManager = ReadingSessionManager.getInstance();
-        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
-
-        // ReaderGlobalFacade 已完成数据操作，这里只处理 UI 差异
-        String content = sessionManager.getCurrentContent();
-        BookChapterDTO chapter = sessionManager.getCurrentChapter();
-
-        // 重新分页（自动定位到第一页）
-        dataManager.initCurrent(content);
-
-        // 刷新 UI
-        refreshEditor();
-
-        log.info("UI 更新完成 - 下一章：{}", chapter != null ? chapter.getTitle() : "未知");
     }
 
     /**
