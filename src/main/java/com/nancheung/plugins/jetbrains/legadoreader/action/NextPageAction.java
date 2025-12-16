@@ -1,8 +1,10 @@
 package com.nancheung.plugins.jetbrains.legadoreader.action;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.common.ReaderGlobalFacade;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,5 +19,21 @@ public class NextPageAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         ReaderGlobalFacade.getInstance().nextPage();
         log.debug("翻到下一页");
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        // 使用后台线程更新，因为只访问 Service，不访问 UI 组件
+        return ActionUpdateThread.BGT;
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        // 检查行内模式是否启用
+        boolean enableShowBodyInLine = PluginSettingsStorage.getInstance()
+                .getState().enableShowBodyInLine;
+
+        // 如果行内模式被禁用，则禁用此 Action
+        e.getPresentation().setEnabled(enableShowBodyInLine);
     }
 }

@@ -5,34 +5,65 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
-import com.nancheung.plugins.jetbrains.legadoreader.common.ReadingEvent;
-import com.nancheung.plugins.jetbrains.legadoreader.common.ReadingEventListener;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.BodyInLineDataManager;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
+import com.nancheung.plugins.jetbrains.legadoreader.event.PaginationEvent;
+import com.nancheung.plugins.jetbrains.legadoreader.event.ReaderEvent;
+import com.nancheung.plugins.jetbrains.legadoreader.event.ReaderEventListener;
+import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
+import com.nancheung.plugins.jetbrains.legadoreader.service.IPaginationManager;
+import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
 
 /**
  * 编辑器行内阅读服务
- * 实现 IReader 接口，提供翻页等阅读操作
- * 订阅 ReadingEventListener，监听章节切换事件以触发重新分页
+ * 实现 IReader 接口（保持兼容），但实际逻辑已迁移到事件订阅模式
+ * 订阅 ReaderEventListener，监听章节和分页事件以触发编辑器刷新
+ *
+ * @author NanCheung
+ * @deprecated 请使用事件订阅模式，不要直接调用此类的方法
  */
 @Slf4j
+@Deprecated(since = "2.0", forRemoval = true)
 public class EditorLineReaderService implements IReader {
+
+    private final PaginationManager paginationManager;
 
     /**
      * 构造函数
-     * 订阅阅读事件，当章节切换时自动重新分页
+     * 订阅阅读事件，当章节切换或分页时自动刷新编辑器
      */
     public EditorLineReaderService() {
+        this.paginationManager = PaginationManager.getInstance();
+
         // 订阅事件
         ApplicationManager.getApplication()
                 .getMessageBus()
                 .connect()
-                .subscribe(ReadingEventListener.TOPIC, (ReadingEventListener) this::onReadingEvent);
+                .subscribe(ReaderEventListener.TOPIC, new ReaderEventListener() {
+                    @Override
+                    public void onEvent(ReaderEvent event) {
+                        EditorLineReaderService.this.onEvent(event);
+                    }
+                });
+
+        log.debug("EditorLineReaderService 已初始化");
+    }
+
+    /**
+     * 处理事件
+     * 根据事件类型执行不同的操作
+     *
+     * @param event 事件对象
+     */
+    private void onEvent(ReaderEvent event) {
+        switch (event) {
+            case ReadingEvent e -> onReadingEvent(e);
+            case PaginationEvent e -> onPaginationEvent(e);
+            default -> {
+                // 忽略其他事件类型
+            }
+        }
     }
 
     /**
@@ -42,25 +73,24 @@ public class EditorLineReaderService implements IReader {
      * @param event 阅读事件
      */
     private void onReadingEvent(ReadingEvent event) {
-        if (event.status() == ReadingEvent.Status.LOADING_SUCCESS) {
-            BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
-
+        if (event.type() == ReadingEvent.ReadingEventType.CHAPTER_LOADED) {
             // 获取内容并重新分页
             String content = event.content();
-            dataManager.initCurrent(content);
+            int pageSize = PluginSettingsStorage.getInstance().getState().textBodyFontSize != null
+                    ? PluginSettingsStorage.getInstance().getState().textBodyFontSize * 2
+                    : 30;
+
+            paginationManager.paginate(content, pageSize);
 
             // 根据方向定位页码
-            List<BodyInLineDataManager.LineData> pages = dataManager.getLineContentList();
-            if (!pages.isEmpty()) {
-                if (event.direction() == ReadingEvent.Direction.PREVIOUS) {
-                    // 上一章，定位到最后一页
-                    dataManager.setCurrentLine(pages.get(pages.size() - 1));
-                    log.debug("上一章，定位到最后一页");
-                } else {
-                    // 下一章或跳转，定位到第一页
-                    dataManager.setCurrentLine(pages.get(0));
-                    log.debug("下一章或跳转，定位到第一页");
-                }
+            if (event.direction() == ReadingEvent.Direction.PREVIOUS) {
+                // 上一章，定位到最后一页
+                paginationManager.goToLastPage();
+                log.debug("上一章，定位到最后一页");
+            } else {
+                // 下一章或跳转，定位到第一页
+                paginationManager.goToFirstPage();
+                log.debug("下一章或跳转，定位到第一页");
             }
 
             // 刷新编辑器
@@ -71,77 +101,59 @@ public class EditorLineReaderService implements IReader {
     }
 
     /**
+     * 处理分页事件
+     * 当分页变更时，刷新编辑器显示
+     *
+     * @param event 分页事件
+     */
+    private void onPaginationEvent(PaginationEvent event) {
+        // 刷新编辑器显示新的页码
+        refreshEditor();
+        log.debug("分页事件：页码 {}/{}", event.currentPage(), event.totalPages());
+    }
+
+    /**
      * 上一页（页内翻页，不跨章节）
-     * 跨章节逻辑由 ReaderGlobalFacade 处理
+     * <p>
+     * 此方法已废弃，翻页逻辑由 CommandBus 处理
+     *
+     * @deprecated 请使用 CommandBus.dispatch(Command.of(CommandType.PREVIOUS_PAGE))
      */
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void previousPage() {
-        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
-        BodyInLineDataManager.LineData currentLine = dataManager.getCurrentLine();
-
-        if (currentLine == null) {
-            log.debug("当前页为空");
-            return;
-        }
-
-        int currentLineIndex = currentLine.getLineIndex();
-
-        if (currentLineIndex > 0) {
-            // 不是第一页，正常翻页
-            List<BodyInLineDataManager.LineData> lineContentList = dataManager.getLineContentList();
-            dataManager.setCurrentLine(lineContentList.get(currentLineIndex - 1));
-            refreshEditor();
-            log.debug("翻到上一页: {}", currentLineIndex);
-        }
-        // 如果是第一页，由 ReaderGlobalFacade 调用 previousChapter()
+        // 此方法已废弃，不再实现
+        log.warn("previousPage() 方法已废弃，请使用 CommandBus");
     }
 
     /**
      * 下一页（页内翻页，不跨章节）
-     * 跨章节逻辑由 ReaderGlobalFacade 处理
+     * <p>
+     * 此方法已废弃，翻页逻辑由 CommandBus 处理
+     *
+     * @deprecated 请使用 CommandBus.dispatch(Command.of(CommandType.NEXT_PAGE))
      */
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void nextPage() {
-        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
-        BodyInLineDataManager.LineData currentLine = dataManager.getCurrentLine();
-
-        if (currentLine == null) {
-            log.debug("当前页为空");
-            return;
-        }
-
-        List<BodyInLineDataManager.LineData> lineContentList = dataManager.getLineContentList();
-        int currentLineIndex = currentLine.getLineIndex();
-
-        if (currentLineIndex < lineContentList.size() - 1) {
-            // 不是最后一页，正常翻页
-            dataManager.setCurrentLine(lineContentList.get(currentLineIndex + 1));
-            refreshEditor();
-            log.debug("翻到下一页: {}", currentLineIndex + 2);
-        }
-        // 如果是最后一页，由 ReaderGlobalFacade 调用 nextChapter()
+        // 此方法已废弃，不再实现
+        log.warn("nextPage() 方法已废弃，请使用 CommandBus");
     }
 
     /**
      * 将整章内容分页
+     * <p>
+     * 此方法已废弃，分页逻辑由 PaginationManager 处理
      *
-     * @param chapterContent 章节内容（此参数被忽略，使用当前会话内容）
+     * @param chapterContent 章节内容
      * @param pageSize       每页大小
+     * @deprecated 请使用 PaginationManager.getInstance().paginate(content, pageSize)
      */
     @Override
+    @Deprecated(since = "2.0", forRemoval = true)
     public void splitChapter(String chapterContent, int pageSize) {
-        log.debug("开始分页，每页大小: " + pageSize);
-
-        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
-        dataManager.setLineMaxLength(pageSize);
-        dataManager.initCurrent();
-
-        log.info("分页完成，共 " + dataManager.getLineContentList().size() + " 页");
-
-        // 触发 UI 刷新
-        refreshEditor();
-
-
+        // 此方法已废弃，不再实现
+        log.warn("splitChapter() 方法已废弃，请使用 PaginationManager");
     }
 
     /**

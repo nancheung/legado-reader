@@ -7,7 +7,8 @@ import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.BodyInLineDataManager;
+import com.nancheung.plugins.jetbrains.legadoreader.service.IPaginationManager;
+import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -57,8 +58,8 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
         }
 
         // 获取当前页数据
-        BodyInLineDataManager dataManager = BodyInLineDataManager.getInstance();
-        BodyInLineDataManager.LineData currentPageData = dataManager.getCurrentLine();
+        PaginationManager paginationManager = PaginationManager.getInstance();
+        IPaginationManager.PageData currentPageData = paginationManager.getCurrentPage();
 
         if (currentPageData == null) {
             // 没有阅读内容时不显示
@@ -66,7 +67,7 @@ public class ReaderEditorLinePainter extends EditorLinePainter {
         }
 
         // 格式化显示文本
-        int totalPages = dataManager.getLineContentList().size();
+        int totalPages = paginationManager.getTotalPages();
         String displayText = currentPageData.formatForDisplay(totalPages);
 
         // 设置文本样式

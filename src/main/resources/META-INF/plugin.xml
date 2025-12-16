@@ -35,6 +35,9 @@
         </toolWindow>
 
         <editor.linePainter implementation="com.nancheung.plugins.jetbrains.legadoreader.editorline.ReaderEditorLinePainter"/>
+
+        <!-- 指令处理器初始化器（在插件启动时自动注册所有处理器） -->
+        <postStartupActivity implementation="com.nancheung.plugins.jetbrains.legadoreader.command.CommandHandlerInitializer"/>
     </extensions>
     <actions>
         <action id="com.nancheung.legado-reader.action.previousChapter" class="com.nancheung.plugins.jetbrains.legadoreader.action.PreviousChapterAction"
