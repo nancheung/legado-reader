@@ -10,7 +10,6 @@ changelog = "2.4.0"
 intelliJPlatform = "2.10.4"
 kotlin = "2.1.20"
 kover = "0.9.1"
-qodana = "2025.1.1"
 lombok = "9.1.0"
 
 [libraries]
@@ -24,5 +23,4 @@ changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intelliJPlatform" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
-qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
 lombok = { id = "io.freefair.lombok", version.ref = "lombok" }

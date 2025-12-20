@@ -5,27 +5,23 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.nancheung.plugins.jetbrains.legadoreader.common.IReader;
 import com.nancheung.plugins.jetbrains.legadoreader.event.PaginationEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReaderEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReaderEventListener;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
-import com.nancheung.plugins.jetbrains.legadoreader.service.IPaginationManager;
 import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 编辑器行内阅读服务
+ * 编辑器行内阅读服务，请使用事件订阅模式，不要直接调用此类的方法
  * 实现 IReader 接口（保持兼容），但实际逻辑已迁移到事件订阅模式
  * 订阅 ReaderEventListener，监听章节和分页事件以触发编辑器刷新
  *
  * @author NanCheung
- * @deprecated 请使用事件订阅模式，不要直接调用此类的方法
  */
 @Slf4j
-@Deprecated(since = "2.0", forRemoval = true)
-public class EditorLineReaderService implements IReader {
+public class EditorLineReaderService {
 
     private final PaginationManager paginationManager;
 
@@ -40,12 +36,7 @@ public class EditorLineReaderService implements IReader {
         ApplicationManager.getApplication()
                 .getMessageBus()
                 .connect()
-                .subscribe(ReaderEventListener.TOPIC, new ReaderEventListener() {
-                    @Override
-                    public void onEvent(ReaderEvent event) {
-                        EditorLineReaderService.this.onEvent(event);
-                    }
-                });
+                .subscribe(ReaderEventListener.TOPIC, (ReaderEventListener) EditorLineReaderService.this::onEvent);
 
         log.debug("EditorLineReaderService 已初始化");
     }
@@ -110,50 +101,6 @@ public class EditorLineReaderService implements IReader {
         // 刷新编辑器显示新的页码
         refreshEditor();
         log.debug("分页事件：页码 {}/{}", event.currentPage(), event.totalPages());
-    }
-
-    /**
-     * 上一页（页内翻页，不跨章节）
-     * <p>
-     * 此方法已废弃，翻页逻辑由 CommandBus 处理
-     *
-     * @deprecated 请使用 CommandBus.dispatch(Command.of(CommandType.PREVIOUS_PAGE))
-     */
-    @Override
-    @Deprecated(since = "2.0", forRemoval = true)
-    public void previousPage() {
-        // 此方法已废弃，不再实现
-        log.warn("previousPage() 方法已废弃，请使用 CommandBus");
-    }
-
-    /**
-     * 下一页（页内翻页，不跨章节）
-     * <p>
-     * 此方法已废弃，翻页逻辑由 CommandBus 处理
-     *
-     * @deprecated 请使用 CommandBus.dispatch(Command.of(CommandType.NEXT_PAGE))
-     */
-    @Override
-    @Deprecated(since = "2.0", forRemoval = true)
-    public void nextPage() {
-        // 此方法已废弃，不再实现
-        log.warn("nextPage() 方法已废弃，请使用 CommandBus");
-    }
-
-    /**
-     * 将整章内容分页
-     * <p>
-     * 此方法已废弃，分页逻辑由 PaginationManager 处理
-     *
-     * @param chapterContent 章节内容
-     * @param pageSize       每页大小
-     * @deprecated 请使用 PaginationManager.getInstance().paginate(content, pageSize)
-     */
-    @Override
-    @Deprecated(since = "2.0", forRemoval = true)
-    public void splitChapter(String chapterContent, int pageSize) {
-        // 此方法已废弃，不再实现
-        log.warn("splitChapter() 方法已废弃，请使用 PaginationManager");
     }
 
     /**

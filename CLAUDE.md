@@ -21,9 +21,6 @@ Legado Reader 是 [开源阅读APP](https://github.com/gedoor/legado) 的 JetBra
 # 清理构建产物
 ./gradlew clean
 
-# 代码质量检查
-./gradlew qodana
-
 # 代码覆盖率
 ./gradlew koverReport
 ```
@@ -150,9 +147,8 @@ IDLE → LOADING → READING → LOADING → READING → ... → SESSION_ENDED
 - **EditorLine 模式**（`EditorLineReaderService`）：在编辑器代码行内显示
 
 两种模式都：
-1. 实现 `IReader` 接口（已标记 @Deprecated，保持兼容）
-2. 订阅 `ReaderEventListener.TOPIC` 响应事件
-3. 使用 `PaginationManager` 统一分页
+1. 订阅 `ReaderEventListener.TOPIC` 响应事件
+2. 使用 `PaginationManager` 统一分页
 
 **重要**：`ReaderFactory` 在插件启动时由 `CommandHandlerInitializer` 强制初始化，确保事件订阅生效。
 
@@ -265,7 +261,6 @@ API 端点定义在 `AddressEnum` 中：
 
 ### 构建插件
 - **Changelog Plugin**: 2.4.0（发版日志管理）
-- **Qodana**: 2025.1.1（代码质量检查）
 - **Kover**: 0.9.1（代码覆盖率）
 
 版本定义在 `gradle/libs.versions.toml` 中，使用 Gradle Version Catalog 管理。
@@ -467,8 +462,6 @@ CommandBus.getInstance().dispatch(Command.of(CommandType.NEXT_CHAPTER));
 ```
 
 **废弃类和方法**：
-- `ReaderGlobalFacade`（标记 @Deprecated(since = "2.0", forRemoval = true)）
-- `IReader` 接口的所有方法（保留接口但方法已废弃）
 - `EditorLineReaderService` 的翻页方法（已迁移到事件订阅）
 
 ### 9. 初始化顺序

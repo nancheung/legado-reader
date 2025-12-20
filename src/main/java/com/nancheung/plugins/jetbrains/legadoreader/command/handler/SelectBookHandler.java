@@ -39,13 +39,10 @@ public class SelectBookHandler implements CommandHandler<SelectBookPayload> {
         ReadingSessionStateMachine stateMachine = ReadingSessionStateMachine.getInstance();
 
         // 1. 获取参数
-        if (!(command.payload() instanceof SelectBookPayload payload)) {
+        if (!(command.payload() instanceof SelectBookPayload(BookDTO book, int chapterIndex))) {
             publisher.publish(CommandEvent.failed(command, "参数类型错误"));
             return;
         }
-
-        BookDTO book = payload.book();
-        int chapterIndex = payload.chapterIndex();
 
         log.info("加载章节: book={}, chapterIndex={}", book.getName(), chapterIndex);
 

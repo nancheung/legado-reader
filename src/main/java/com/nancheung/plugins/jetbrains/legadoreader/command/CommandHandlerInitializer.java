@@ -4,7 +4,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.nancheung.plugins.jetbrains.legadoreader.command.handler.*;
-import com.nancheung.plugins.jetbrains.legadoreader.common.ReaderFactory;
+import com.nancheung.plugins.jetbrains.legadoreader.editorline.EditorLineReaderService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,9 +25,7 @@ public class CommandHandlerInitializer implements StartupActivity {
     @Override
     public void runActivity(@NotNull Project project) {
         // 使用 invokeLater 确保在 Application 初始化完成后执行
-        ApplicationManager.getApplication().invokeLater(() -> {
-            initializeHandlers();
-        });
+        ApplicationManager.getApplication().invokeLater(CommandHandlerInitializer::initializeHandlers);
     }
 
     /**
@@ -44,9 +42,7 @@ public class CommandHandlerInitializer implements StartupActivity {
 
         log.info("开始注册指令处理器...");
 
-        // ========== 初始化 ReaderFactory（触发 EditorLineReaderService 事件订阅）==========
-        ReaderFactory[] factories = ReaderFactory.values();
-        log.info("初始化 {} 个 Reader 实例", factories.length);
+        new EditorLineReaderService();
 
         // ========== 章节切换处理器 ==========
         registry.register(new NextChapterHandler());

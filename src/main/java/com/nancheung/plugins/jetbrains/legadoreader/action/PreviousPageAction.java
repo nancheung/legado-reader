@@ -3,7 +3,9 @@ package com.nancheung.plugins.jetbrains.legadoreader.action;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.nancheung.plugins.jetbrains.legadoreader.common.ReaderGlobalFacade;
+import com.nancheung.plugins.jetbrains.legadoreader.command.Command;
+import com.nancheung.plugins.jetbrains.legadoreader.command.CommandBus;
+import com.nancheung.plugins.jetbrains.legadoreader.command.CommandType;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +19,7 @@ public class PreviousPageAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        ReaderGlobalFacade.getInstance().previousPage();
+        CommandBus.getInstance().dispatchAsync(Command.of(CommandType.PREVIOUS_PAGE));
         log.debug("翻到上一页");
     }
 

@@ -7,7 +7,6 @@ import com.nancheung.plugins.jetbrains.legadoreader.event.CommandEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.EventPublisher;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
-import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSessionState;
 import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
 import com.nancheung.plugins.jetbrains.legadoreader.service.ReadingSessionStateMachine;
 import lombok.extern.slf4j.Slf4j;

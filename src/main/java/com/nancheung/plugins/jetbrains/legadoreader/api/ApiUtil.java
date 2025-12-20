@@ -9,9 +9,9 @@ import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookProgressDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.R;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.AddressHistoryStorage;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
-import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;

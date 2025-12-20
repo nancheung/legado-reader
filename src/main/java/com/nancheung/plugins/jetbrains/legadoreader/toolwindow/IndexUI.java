@@ -4,23 +4,25 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
+import com.nancheung.plugins.jetbrains.legadoreader.command.Command;
+import com.nancheung.plugins.jetbrains.legadoreader.command.CommandBus;
+import com.nancheung.plugins.jetbrains.legadoreader.command.CommandType;
+import com.nancheung.plugins.jetbrains.legadoreader.command.payload.SelectBookPayload;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
 import com.nancheung.plugins.jetbrains.legadoreader.event.PaginationEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReaderEvent;
-import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReaderEventListener;
-import com.nancheung.plugins.jetbrains.legadoreader.common.ReaderGlobalFacade;
+import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.gui.SettingFactory;
-import com.nancheung.plugins.jetbrains.legadoreader.storage.AddressHistoryStorage;
-import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSession;
 import com.nancheung.plugins.jetbrains.legadoreader.service.IPaginationManager;
 import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.AddressHistoryStorage;
+import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -162,15 +164,12 @@ public class IndexUI {
         ApplicationManager.getApplication()
                 .getMessageBus()
                 .connect()
-                .subscribe(ReaderEventListener.TOPIC, new ReaderEventListener() {
-                    @Override
-                    public void onEvent(ReaderEvent event) {
-                        // 使用 pattern matching 处理不同事件
-                        switch (event) {
-                            case ReadingEvent e -> INSTANCE.onReadingEvent(e);
-                            case PaginationEvent e -> INSTANCE.onPaginationEvent(e);
-                            default -> {}
-                        }
+                .subscribe(ReaderEventListener.TOPIC, (ReaderEventListener) event -> {
+                    // 使用 pattern matching 处理不同事件
+                    switch (event) {
+                        case ReadingEvent e -> INSTANCE.onReadingEvent(e);
+                        case PaginationEvent e -> INSTANCE.onPaginationEvent(e);
+                        default -> {}
                     }
                 });
 
@@ -292,8 +291,11 @@ public class IndexUI {
                 // 获取书籍信息
                 BookDTO book = getBook(author, name);
 
-                // 使用 Facade 加载章节（事件驱动）
-                ReaderGlobalFacade.getInstance().loadChapter(book, book.getDurChapterIndex());
+                // 加载章节（事件驱动）
+                CommandBus.getInstance().dispatchAsync(Command.of(
+                        CommandType.SELECT_BOOK,
+                        new SelectBookPayload(book, book.getDurChapterIndex())
+                ));
             }
         };
     }
@@ -329,7 +331,7 @@ public class IndexUI {
         ADDRESS_HISTORY_BOX_MODEL.removeAllElements();
         ADDRESS_HISTORY_BOX_MODEL.addAll(addressHistoryList);
 
-        if (addressHistoryList.size() == 0) {
+        if (addressHistoryList.isEmpty()) {
             addressHistoryBox.setEnabled(false);
             ADDRESS_HISTORY_BOX_MODEL.addElement("无历史记录");
             return;
@@ -337,8 +339,8 @@ public class IndexUI {
 
         // 设置书架面板的ip输入框
         addressHistoryBox.setEnabled(true);
-        ADDRESS_HISTORY_BOX_MODEL.setSelectedItem(addressHistoryList.get(0));
-        addressTextField.setText(addressHistoryList.get(0));
+        ADDRESS_HISTORY_BOX_MODEL.setSelectedItem(addressHistoryList.getFirst());
+        addressTextField.setText(addressHistoryList.getFirst());
 
     }
 
