@@ -9,10 +9,14 @@
 # Legado Reader
 > 编码，并阅读。
 <!-- Plugin description -->
+**Legado Reader** is a JetBrains IDE plugin based on the open-source reading app [Legado](https://github.com/gedoor/legado)
+
+It brings a reading experience into the IDE, allowing developers to read anytime without leaving their coding environment.
+
+**Designed to provide inspiration and improve productivity during the coding process.**
+
+
 Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrains IDE插件版，旨在随时随地在IDE中进行阅读，为编码过程带来灵感和效率的提升。
-<!-- Plugin description end -->
-
-
 
 # Legado Reader诞生
 > 有一天，我在编码的时候，突然想起了一本书，于是我打开了手机，打开了阅读APP，然后打开了书，然后开始阅读，然后我发现，我在阅读的时候，编码的效率并不高。
@@ -20,7 +24,20 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 > 于是我就想，能不能在编码的时候，随时随地阅读。当这个插件完成后，我发现，我在阅读的时候，编码的效率提高了。
 > 
 > 因此，我希望，这个插件能够帮助到更多的人，让他们在编码的时候，随时随地阅读，提高编码效率。
- 
+
+# 已支持功能：
+1. 支持在插件窗口中阅读
+2. 支持在代码编辑器中阅读，在代码行后展示
+3. 支持查看书架目录
+4. 阅读章节正文
+5. 切换上下章
+6. 与阅读APP同步进度
+7. 支持自定义字体颜色、大小
+8. 支持全局保存配置；
+9. 支持服务版阅读;
+10. 阅读APP的web服务地址的历史记录;
+    ……
+<!-- Plugin description end -->
 
 # 开始安装
 ## 方式一：使用本插件的自有更新方式
@@ -86,6 +103,6 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 
 # 计划：
 1. 在IDE中更多的地方显示正文内容；
-1. 支持更多快捷键;
+2. 支持更多快捷键;
 
    ……

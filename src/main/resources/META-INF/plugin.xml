@@ -10,48 +10,6 @@
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="i@nancheung.com" url="https://www.nancheung.com">NanCheung</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description>
-        <![CDATA[
-    <p>
-        <b>Legado Reader</b> is a JetBrains IDE plugin based on the open-source reading app
-        <a href="https://github.com/gedoor/legado">Legado</a>.
-        It brings a reading experience into the IDE, allowing developers to read anytime
-        without leaving their coding environment.
-    </p>
-
-    <p>
-        Designed to provide inspiration and improve productivity during the coding process.
-    </p>
-
-    <hr/>
-
-    <p>
-        <b>Legado Reader</b> 是基于
-        <a href="https://github.com/gedoor/legado">开源阅读 APP「Legado（阅读）」</a>
-        的 JetBrains IDE 插件版本，
-        旨在将阅读体验引入 IDE，
-        让开发者可以在编写代码的同时，随时随地进行阅读。
-    </p>
-
-    <p>
-        通过在 IDE 内集成阅读功能，
-        本插件希望在不打断开发流程的前提下，
-        为编码过程带来灵感，并提升整体工作效率。
-    </p>
-
-    <ul>
-        <li>📖 IDE 内嵌阅读界面</li>
-        <li>📖 IDE 内任意代码行后展示内容</li>
-        <li>📚 支持 Legado Web 及服务器版服务</li>
-        <li>🧭 目录与章节浏览</li>
-        <li>🧠 不打断开发流程的阅读体验</li>
-    </ul>
-    ]]>
-    </description>
-
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
