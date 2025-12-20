@@ -119,8 +119,17 @@ intellijPlatform {
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
-    groups.empty()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
+    headerParserRegex = """(\d+\.\d+(?:\.\d+)*)""".toRegex()
+    outputFile = file("build/release-note.txt")
+    introduction =
+        """
+        Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrains IDE插件版，旨在随时随地在IDE中进行阅读。比如：
+        
+        - 在IDE中的窗口中
+        - 在任意一行代码后
+        - 随时隐藏/显示，任意调节颜色和大小
+        """.trimIndent()
 }
 
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
@@ -142,7 +151,16 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("242")
+        sinceBuild.set(providers.gradleProperty("pluginSinceBuild"))
+        changeNotes = provider {
+            changelog.renderItem(
+                changelog
+                    .getUnreleased()
+                    .withHeader(false)
+                    .withEmptySections(false),
+                Changelog.OutputType.HTML
+            )
+        }
     }
 
     wrapper {
