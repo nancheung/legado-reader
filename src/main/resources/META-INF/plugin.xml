@@ -13,62 +13,44 @@
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description><![CDATA[
-    open source legado app the IDE plug-in version of , only provides reading experience in the IDE anytime and anywhere.<br>
-    <em>Code it, and read it.</em>
-  ]]></description>
+    <description>
+        <![CDATA[
+    <p>
+        <b>Legado Reader</b> is a JetBrains IDE plugin based on the open-source reading app
+        <a href="https://github.com/gedoor/legado">Legado</a>.
+        It brings a reading experience into the IDE, allowing developers to read anytime
+        without leaving their coding environment.
+    </p>
 
-    <change-notes><![CDATA[
-        <h2>V1.4.1<h2>
-        <h3>特性</h3>
-        <ul>
-            <li>新增开启异常日志的开关</li>
-        </ul>
-        <h3>优化</h3>
-        <ul>
-            <li>优化切换章节时的加载中提示</li>
-        </ul>
-        <hr>
-        <h2>V1.4<h2>
-        <h3>特性</h3>
-        <ul>
-            <li>支持切换正文时自动获取光标焦点位置到最新进度位置</li>
-            <li>支持请求api的自定义参数</li>
-            <li>支持服务器版阅读(hectorqin/reader)</li>
-        </ul>
-        <hr>
-        <h2>V1.3<h2>
-        <h3>特性</h3>
-        <ul>
-            <li>支持快捷键：切换上下章（shift+alt+LEFT/RIGHT）可自己在设置中定义</li>
-            <li>UI更新：阅读页的按钮转为图标按钮</li>
-        </ul>
-        <h3>BUG修复</h3>
-        <ul>
-            <li>随着切换章节，插件界面会变得越来越宽(github #4)</li>
-        </ul>
-        <hr>
-        <h2>V1.2.1<h2>
-        <h3>优化</h3>
-        <ul>
-            <li>异步调用接口请求内容</li>
-            <li>建议更新，极大优化使用体验</li>
-        </ul>
-        <hr>
-        <h2>V1.2<h2>
-        <h3>新特性</h3>
-        <ul>
-            <li>支持快捷切换阅读的历史地址</li>
-            <li>在某些地方添加一些引导设置提示语</li>
-        </ul>
-        <hr>
-        <h3>更多说明</h3>
-        <ul>
-            <li>作者博客：https://blog.nancheung.com</li>
-            <li>项目地址：https://github.com/nancheung/legado-reader</li>
-            <li>最新版本下载与更新记录：https://github.com/nancheung/legado-reader/releases</li>
-        </ul>
-]]></change-notes>
+    <p>
+        Designed to provide inspiration and improve productivity during the coding process.
+    </p>
+
+    <hr/>
+
+    <p>
+        <b>Legado Reader</b> 是基于
+        <a href="https://github.com/gedoor/legado">开源阅读 APP「Legado（阅读）」</a>
+        的 JetBrains IDE 插件版本，
+        旨在将阅读体验引入 IDE，
+        让开发者可以在编写代码的同时，随时随地进行阅读。
+    </p>
+
+    <p>
+        通过在 IDE 内集成阅读功能，
+        本插件希望在不打断开发流程的前提下，
+        为编码过程带来灵感，并提升整体工作效率。
+    </p>
+
+    <ul>
+        <li>📖 IDE 内嵌阅读界面</li>
+        <li>📖 IDE 内任意代码行后展示内容</li>
+        <li>📚 支持 Legado Web 及服务器版服务</li>
+        <li>🧭 目录与章节浏览</li>
+        <li>🧠 不打断开发流程的阅读体验</li>
+    </ul>
+    ]]>
+    </description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
@@ -87,15 +69,42 @@
         </toolWindow>
 
         <editor.linePainter implementation="com.nancheung.plugins.jetbrains.legadoreader.editorline.ReaderEditorLinePainter"/>
+
+        <!-- 指令处理器初始化器（在插件启动时自动注册所有处理器） -->
+        <postStartupActivity implementation="com.nancheung.plugins.jetbrains.legadoreader.command.CommandHandlerInitializer"/>
     </extensions>
     <actions>
         <action id="com.nancheung.legado-reader.action.previousChapter" class="com.nancheung.plugins.jetbrains.legadoreader.action.PreviousChapterAction"
-                text="上一章" icon="/icons/previousChapter.svg">
+                text="上一章" description="切换到上一章" icon="/icons/previousChapter.svg">
             <keyboard-shortcut keymap="$default" first-keystroke="shift alt LEFT"/>
         </action>
         <action id="com.nancheung.legado-reader.action.nextChapter" class="com.nancheung.plugins.jetbrains.legadoreader.action.NextChapterAction"
-                text="下一章" icon="/icons/nextChapter.svg">
+                text="下一章" description="切换到下一章" icon="/icons/nextChapter.svg">
             <keyboard-shortcut keymap="$default" first-keystroke="shift alt RIGHT"/>
+        </action>
+
+        <!-- 新增：显示/隐藏阅读模式 -->
+        <action id="com.nancheung.legado-reader.action.toggleReadingMode"
+                class="com.nancheung.plugins.jetbrains.legadoreader.action.ToggleReadingModeAction"
+                text="行内模式 显示/隐藏"
+                description="切换行内阅读模式的显示状态（全局开关）">
+            <mouse-shortcut keymap="$default" keystroke="button2 doubleClick"/>
+        </action>
+
+        <!-- 新增：上一页 -->
+        <action id="com.nancheung.legado-reader.action.previousPage"
+                class="com.nancheung.plugins.jetbrains.legadoreader.action.PreviousPageAction"
+                text="上一页"
+                description="阅读上一页内容">
+            <mouse-shortcut keymap="$default" keystroke="control button143"/>
+        </action>
+
+        <!-- 新增：下一页 -->
+        <action id="com.nancheung.legado-reader.action.nextPage"
+                class="com.nancheung.plugins.jetbrains.legadoreader.action.NextPageAction"
+                text="下一页"
+                description="阅读下一页内容">
+            <mouse-shortcut keymap="$default" keystroke="control button142"/>
         </action>
 
         <group id="com.nancheung.legado-reader.bar.textBodyToolbar">
