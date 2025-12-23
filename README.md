@@ -40,7 +40,13 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 <!-- Plugin description end -->
 
 # 开始安装
-## 方式一：使用本插件的自有更新方式
+## 官方市场安装
+[插件地址](https://plugins.jetbrains.com/plugin/20974-legado-reader)
+
+或者在IDE的插件中搜索 `Legado Reader` 可直接安装
+
+## 使用本插件的自有更新方式
+>  (省去官方市场审核，更新更快)
 > （依赖github，对网速有要求）
 
 > 1. 打开插件市场窗口：`JetBrains IDE` ->`File` -> `Settings` -> `Plugins` -> `Marketplace`
@@ -50,7 +56,7 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 > 4. 安装插件：`Plugins` -> `Marketplace`，搜索：`Legado Reader` 并安装
 > 5. 后续可在插件页面进行更新
 
-## 方式二：离线安装插件包
+## 离线安装插件包
 > 1. 下载最新的离线插件包：
 >    1. [蓝奏云(密码：nancheung)](https://nancheung.lanzouw.com/b0674v2sj)
 >    2. [GitHub Release](https://github.com/nancheung/legado-reader/releases)
