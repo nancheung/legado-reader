@@ -241,8 +241,8 @@ public class IndexUI {
         final ActionManager actionManager = ActionManager.getInstance();
         ActionToolbar actionToolbar = actionManager.createActionToolbar(Constant.PLUGIN_TOOL_BAR_ID, (DefaultActionGroup) actionManager.getAction(Constant.PLUGIN_TOOL_BAR_ID), true);
 
-        // 显式设置 TargetComponent，确保 actions 在正确的上下文中更新
-        actionToolbar.setTargetComponent(textBodyPane);
+        // 显式设置 TargetComponent 为 textBodyPanel，确保即使显示错误提示时 actions 也能执行
+        actionToolbar.setTargetComponent(textBodyPanel);
 
         // 将bar添加至ui
         bar.add(actionToolbar.getComponent());
