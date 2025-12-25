@@ -3,6 +3,7 @@
 .kotlin
 .qodana
 build
+.run
 
 .gradle
 build/
