@@ -208,6 +208,12 @@ public final class PaginationManager implements IPaginationManager {
      * @return 页数据列表
      */
     private List<PageData> splitIntoPages(String content, int maxLength) {
+        // 添加参数验证
+        if (maxLength <= 0) {
+            log.warn("无效的页面大小: {}, 使用默认值 30", maxLength);
+            maxLength = 30;
+        }
+
         List<PageData> result = new ArrayList<>();
         int start = 0;
         int pageIndex = 0;
@@ -218,8 +224,14 @@ public final class PaginationManager implements IPaginationManager {
             // 避免在 Unicode 代理对中间截断
             // 代理对：高代理（U+D800 到 U+DBFF）+ 低代理（U+DC00 到 U+DFFF）
             // 例如 emoji "😀" 由两个 char 组成
-            if (end < content.length() && Character.isHighSurrogate(content.charAt(end - 1))) {
+            if (end < content.length() && end > 0 && Character.isHighSurrogate(content.charAt(end - 1))) {
                 end--; // 回退一个字符，避免截断 emoji
+            }
+
+            // 防止无限循环：确保每次循环都推进至少 1 个字符
+            if (end <= start) {
+                log.warn("分页异常：end({}) <= start({}), 强制推进", end, start);
+                end = Math.min(start + 1, content.length());
             }
 
             String pageContent = content.substring(start, end);

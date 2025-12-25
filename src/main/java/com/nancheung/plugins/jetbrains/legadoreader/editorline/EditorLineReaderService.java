@@ -13,6 +13,9 @@ import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
 import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
  * 编辑器行内阅读服务，请使用事件订阅模式，不要直接调用此类的方法
  * 实现 IReader 接口（保持兼容），但实际逻辑已迁移到事件订阅模式
@@ -67,9 +70,17 @@ public class EditorLineReaderService {
         if (event.type() == ReadingEvent.ReadingEventType.CHAPTER_LOADED) {
             // 获取内容并重新分页
             String content = event.content();
-            int pageSize = PluginSettingsStorage.getInstance().getState().textBodyFontSize != null
-                    ? PluginSettingsStorage.getInstance().getState().textBodyFontSize * 2
-                    : 30;
+
+            // 获取字体大小，如果为 0 或 null，使用 IDE 默认字体大小
+            Integer fontSize = PluginSettingsStorage.getInstance().getState().textBodyFontSize;
+            int pageSize;
+            if (fontSize == null || fontSize == 0) {
+                // 使用 IDE 默认字体大小（与 PluginSettingsStorage.getTextBodyFont() 逻辑一致）
+                Font defaultFont = new JLabel().getFont();
+                pageSize = defaultFont.getSize() * 2;
+            } else {
+                pageSize = fontSize * 2;
+            }
 
             paginationManager.paginate(content, pageSize);
 
