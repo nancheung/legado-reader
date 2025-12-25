@@ -7,7 +7,10 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.text.DefaultFormatter;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -24,8 +27,15 @@ public class SettingUI {
 
 
     public SettingUI() {
-        // 正文大小输入范围
+        // 正文字体大小限制输入范围
         textBodyFontSizeSpinner.setModel(new SpinnerNumberModel(0, 0, 100, 1));
+
+        // 拒绝非法输入，自动提交合法输入
+        JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) textBodyFontSizeSpinner.getEditor();
+        if (editor.getTextField().getFormatter() instanceof DefaultFormatter df) {
+            df.setAllowsInvalid(false);
+            df.setCommitsOnValidEdit(true);
+        }
 
         // 正文字体颜色选择的点击事件
         textBodyFontColorLabel.addMouseListener(chooseColorMouseListener());
@@ -49,11 +59,15 @@ public class SettingUI {
     }
     
     public void readSettings(PluginSettingsStorage.State state) {
+        if (state == null) {
+            return;
+        }
+
         if (state.textBodyFontColorRgb != null) {
             textBodyFontColorLabel.setForeground(new JBColor(new Color(state.textBodyFontColorRgb), new Color(state.textBodyFontColorRgb)));
         }
 
-        if (state.textBodyFontSize != null && state.textBodyFontSize > 0) {
+        if (state.textBodyFontSize != null && state.textBodyFontSize >= 0) {
             textBodyFontSizeSpinner.setValue(state.textBodyFontSize);
         }
 
