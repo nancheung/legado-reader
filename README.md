@@ -1,4 +1,4 @@
-![legado-reader](https://img.shields.io/badge/legado%20reader-v1.0.3-green.svg)
+![legado-reader](https://img.shields.io/badge/legado%20reader-v1.5.1-green.svg)
 ![language top](https://img.shields.io/github/languages/top/nancheung/legado-reader?color=orange)
 ![github stars](https://img.shields.io/github/stars/nancheung/legado-reader)
 ![platform](https://img.shields.io/badge/platform-JetBrains%20IDE-lightgrey)

@@ -20,6 +20,26 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 
 ### Security
 
+## [1.5.1] - 2025-12-25
+
+### Added
+
+- :sparkles: feat: 新增字体和行高设置，支持设置中预览字体样式 (4866872)
+- :memo: docs: 增加插件的官方市场地址 (cd91d52)
+
+### Changed
+
+- :memo: docs: 使用README中的片段作为插件描述 (60f6977)
+
+### Removed
+- :fire: chore: 清理不必提交的配置文件 (5b2ef828)
+
+### Fixed
+
+- :bug: fix: 设置页修改值不会触发isModified，不会重置 (ac91417)
+- :bug: fix: 正文页报错后返回书架按钮无效 (822c2f0)
+- :bug: fix: 当字体大小为0时，阅读异常 (3d44d22)
+
 ## [1.5] - 2025-12-21
 
 ### Added
@@ -35,5 +55,6 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 - refactor: 重构数据层 (fd214fb)
 - refactor: 彻底移除 CurrentReadData 并改用 ReadingSessionManager (438d047)
 
-[Unreleased]: https://github.com/nancheung/legado-reader/compare/v1.5...HEAD
+[Unreleased]: https://github.com/nancheung/legado-reader/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/nancheung/legado-reader/compare/v1.5...v1.5.1
 [1.5]: https://github.com/nancheung/legado-reader/commits/v1.5
