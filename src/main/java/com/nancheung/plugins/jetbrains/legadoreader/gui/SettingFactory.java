@@ -11,6 +11,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import java.awt.*;
 
 public class SettingFactory implements SearchableConfigurable {
 
@@ -67,7 +71,28 @@ public class SettingFactory implements SearchableConfigurable {
 
         boolean inLineModelModified = Boolean.TRUE.equals(state.enableShowBodyInLine) != ui.getEnableInLineModelCheckBox().isSelected();
 
-        return fontColorModified || fontSizeModified || customParamModified || errorLogModified || inLineModelModified;
+        // 新增：字体名称比较
+        String currentFontFamily = (String) ui.getTextBodyFontFamilyComboBox().getSelectedItem();
+        String storedFontFamily = state.textBodyFontFamily;
+        if (storedFontFamily == null || storedFontFamily.isEmpty()) {
+            try {
+                storedFontFamily = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance()
+                        .getGlobalScheme()
+                        .getFont(com.intellij.openapi.editor.colors.EditorFontType.PLAIN)
+                        .getFamily();
+            } catch (Exception e) {
+                storedFontFamily = new JLabel().getFont().getFamily();
+            }
+        }
+        boolean fontFamilyModified = !currentFontFamily.equals(storedFontFamily);
+
+        // 新增：行高比较（注意精度问题）
+        double currentLineHeight = (double) ui.getTextBodyLineHeightSpinner().getValue();
+        double storedLineHeight = state.textBodyLineHeight != null ? state.textBodyLineHeight : 1.5;
+        boolean lineHeightModified = Math.abs(currentLineHeight - storedLineHeight) > 0.001;
+
+        return fontColorModified || fontSizeModified || customParamModified ||
+                errorLogModified || inLineModelModified || fontFamilyModified || lineHeightModified;
     }
 
     @Override
@@ -86,8 +111,24 @@ public class SettingFactory implements SearchableConfigurable {
         // 更新 UI
         PluginSettingsStorage storage = PluginSettingsStorage.getInstance();
         java.awt.Color fontColor = storage.getTextBodyFontColor();
-        IndexUI.getInstance().getTextBodyPane().setForeground(new JBColor(fontColor, fontColor));
-        IndexUI.getInstance().getTextBodyPane().setFont(storage.getTextBodyFont());
+        Font font = storage.getTextBodyFont(); // 已支持自定义字体
+        double lineHeight = storage.getTextBodyLineHeight();
+
+        JTextPane textBodyPane = IndexUI.getInstance().getTextBodyPane();
+        textBodyPane.setForeground(new JBColor(fontColor, fontColor));
+        textBodyPane.setFont(font);
+
+        // 新增：应用行高
+        applyLineHeightToTextPane(textBodyPane, lineHeight);
+    }
+
+    private void applyLineHeightToTextPane(JTextPane textPane, double lineHeight) {
+        SimpleAttributeSet attrs = new SimpleAttributeSet();
+        float lineSpacing = (float) (lineHeight - 1.0);
+        StyleConstants.setLineSpacing(attrs, lineSpacing);
+
+        StyledDocument doc = textPane.getStyledDocument();
+        doc.setParagraphAttributes(0, doc.getLength(), attrs, false);
     }
 
     /**
@@ -119,5 +160,9 @@ public class SettingFactory implements SearchableConfigurable {
         state.apiCustomParam = ui.getApiCustomParamTextArea().getText();
         state.enableErrorLog = ui.getEnableErrorLogCheckBox().isSelected();
         state.enableShowBodyInLine = ui.getEnableInLineModelCheckBox().isSelected();
+
+        // 新增：保存字体名称和行高
+        state.textBodyFontFamily = (String) ui.getTextBodyFontFamilyComboBox().getSelectedItem();
+        state.textBodyLineHeight = (double) ui.getTextBodyLineHeightSpinner().getValue();
     }
 }

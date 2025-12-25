@@ -40,6 +40,14 @@ public final class PluginSettingsStorage implements PersistentStateComponent<Plu
          */
         public Integer textBodyFontSize;
         /**
+         * 正文字体名称
+         */
+        public String textBodyFontFamily;
+        /**
+         * 正文字体行高倍数
+         */
+        public Double textBodyLineHeight;
+        /**
          * API 自定义参数
          */
         public String apiCustomParam;
@@ -93,11 +101,15 @@ public final class PluginSettingsStorage implements PersistentStateComponent<Plu
      * @return 字体
      */
     public Font getTextBodyFont() {
-        Integer size = getState().textBodyFontSize;
+        State state = getState();
+        String family = getTextBodyFontFamily();
+        Integer size = state.textBodyFontSize;
+
         if (size == null || size == 0) {
             return new JLabel().getFont();
         }
-        return new Font(Font.DIALOG, Font.PLAIN, size);
+
+        return new Font(family, Font.PLAIN, size);
     }
 
     /**
@@ -137,5 +149,40 @@ public final class PluginSettingsStorage implements PersistentStateComponent<Plu
         currentState.enableShowBodyInLine = newState;
 
         return newState;
+    }
+
+    /**
+     * 获取正文字体名称
+     * 如果未设置，返回 IDE 编辑器字体
+     *
+     * @return 字体名称
+     */
+    public String getTextBodyFontFamily() {
+        String family = getState().textBodyFontFamily;
+        if (family == null || family.isEmpty()) {
+            try {
+                return com.intellij.openapi.editor.colors.EditorColorsManager.getInstance()
+                        .getGlobalScheme()
+                        .getFont(com.intellij.openapi.editor.colors.EditorFontType.PLAIN)
+                        .getFamily();
+            } catch (Exception e) {
+                return new JLabel().getFont().getFamily();
+            }
+        }
+        return family;
+    }
+
+    /**
+     * 获取正文字体行高
+     * 如果未设置或超出范围，返回默认值 1.5
+     *
+     * @return 行高倍数
+     */
+    public double getTextBodyLineHeight() {
+        Double lineHeight = getState().textBodyLineHeight;
+        if (lineHeight == null || lineHeight < 0.5 || lineHeight > 3.0) {
+            return 1.5;
+        }
+        return lineHeight;
     }
 }

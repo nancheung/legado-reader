@@ -212,9 +212,6 @@ public class IndexUI {
     }
 
     private void initIndexUI() {
-        // 初始化设置数据
-        SettingFactory.instance();
-
         // 隐藏正文面板
         textBodyPanel.setVisible(false);
         // 隐藏正文面板的错误提示
@@ -227,9 +224,6 @@ public class IndexUI {
 
         // 设置书架面板的表格数据格式
         addressHistoryBox.setModel(ADDRESS_HISTORY_BOX_MODEL);
-
-        // 注意：不在初始化时调用 setAddressUI()，避免访问 Service
-        // 将在 initAddressHistory() 中延迟调用
 
         // 设置书架面板的表格数据格式
         bookshelfTable.setModel(IndexUI.BOOK_SHELF_TABLE_MODEL);
@@ -524,17 +518,39 @@ public class IndexUI {
                 event.book().getName(), event.chapter().getTitle());
 
         // 设置正文字体样式
-        Color fontColor = PluginSettingsStorage.getInstance().getTextBodyFontColor();
+        PluginSettingsStorage storage = PluginSettingsStorage.getInstance();
+        Color fontColor = storage.getTextBodyFontColor();
+        Font font = storage.getTextBodyFont(); // 已支持自定义字体
+        double lineHeight = storage.getTextBodyLineHeight();
+
         textBodyPane.setForeground(new JBColor(fontColor, fontColor));
-        textBodyPane.setFont(PluginSettingsStorage.getInstance().getTextBodyFont());
+        textBodyPane.setFont(font);
 
         // 设置正文内容
         String title = event.chapter().getTitle();
         String content = event.content();
         textBodyPane.setText(title + "\n" + content);
 
+        // 应用行高（在 setText 之后）
+        applyLineHeight(textBodyPane, lineHeight);
+
         // 设置光标位置
         textBodyPane.setCaretPosition(event.chapterPosition());
+    }
+
+    /**
+     * 应用行高到 JTextPane
+     *
+     * @param textPane   文本面板
+     * @param lineHeight 行高倍数
+     */
+    private void applyLineHeight(JTextPane textPane, double lineHeight) {
+        javax.swing.text.SimpleAttributeSet attrs = new javax.swing.text.SimpleAttributeSet();
+        float lineSpacing = (float) (lineHeight - 1.0);
+        javax.swing.text.StyleConstants.setLineSpacing(attrs, lineSpacing);
+
+        javax.swing.text.StyledDocument doc = textPane.getStyledDocument();
+        doc.setParagraphAttributes(0, doc.getLength(), attrs, false);
     }
 
     /**

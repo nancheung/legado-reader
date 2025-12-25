@@ -71,17 +71,7 @@ public class EditorLineReaderService {
             // 获取内容并重新分页
             String content = event.content();
 
-            // 获取字体大小，如果为 0 或 null，使用 IDE 默认字体大小
-            Integer fontSize = PluginSettingsStorage.getInstance().getState().textBodyFontSize;
-            int pageSize;
-            if (fontSize == null || fontSize == 0) {
-                // 使用 IDE 默认字体大小（与 PluginSettingsStorage.getTextBodyFont() 逻辑一致）
-                Font defaultFont = new JLabel().getFont();
-                pageSize = defaultFont.getSize() * 2;
-            } else {
-                pageSize = fontSize * 2;
-            }
-
+            int pageSize = new JLabel().getFont().getSize() * 2;
             paginationManager.paginate(content, pageSize);
 
             // 根据方向定位页码
