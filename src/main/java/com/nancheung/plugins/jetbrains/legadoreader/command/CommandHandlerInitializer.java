@@ -2,11 +2,17 @@ package com.nancheung.plugins.jetbrains.legadoreader.command;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.startup.StartupActivity;
 import com.nancheung.plugins.jetbrains.legadoreader.command.handler.*;
 import com.nancheung.plugins.jetbrains.legadoreader.editorline.EditorLineReaderService;
+import kotlin.Unit;
+import kotlin.coroutines.Continuation;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 指令处理器初始化器
@@ -16,16 +22,23 @@ import org.jetbrains.annotations.NotNull;
  * @author NanCheung
  */
 @Slf4j
-public class CommandHandlerInitializer implements StartupActivity {
+public class CommandHandlerInitializer implements ProjectActivity {
 
-    /**
-     * 项目打开时执行
-     * 只在第一次打开时初始化一次（Application 级别）
-     */
+    /** 防止多个 project 同时初始化（更稳） */
+    private static final AtomicBoolean initialized = new AtomicBoolean(false);
+
     @Override
-    public void runActivity(@NotNull Project project) {
-        // 使用 invokeLater 确保在 Application 初始化完成后执行
+    public @Nullable Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
+        // 如果已经初始化过，直接跳过
+        if (!initialized.compareAndSet(false, true)) {
+            log.debug("处理器已初始化，跳过");
+            return Unit.INSTANCE;
+        }
+
+        // invokeLater 确保在 UI 初始化完成后执行
         ApplicationManager.getApplication().invokeLater(CommandHandlerInitializer::initializeHandlers);
+
+        return Unit.INSTANCE;
     }
 
     /**
