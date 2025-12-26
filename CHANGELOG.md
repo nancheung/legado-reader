@@ -8,17 +8,6 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 
 ## [Unreleased]
 
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [1.5.1] - 2025-12-25
 
@@ -40,7 +29,7 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 - :bug: fix: 正文页报错后返回书架按钮无效 (822c2f0)
 - :bug: fix: 当字体大小为0时，阅读异常 (3d44d22)
 
-## [1.5] - 2025-12-21
+## [1.5.0] - 2025-12-21
 
 ### Added
 
@@ -56,5 +45,5 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 - refactor: 彻底移除 CurrentReadData 并改用 ReadingSessionManager (438d047)
 
 [Unreleased]: https://github.com/nancheung/legado-reader/compare/v1.5.1...HEAD
-[1.5.1]: https://github.com/nancheung/legado-reader/compare/v1.5...v1.5.1
-[1.5]: https://github.com/nancheung/legado-reader/commits/v1.5
+[1.5.1]: https://github.com/nancheung/legado-reader/compare/v1.4.1...v1.5.1
+[1.5.0]: https://github.com/nancheung/legado-reader/commits/v1.5.0

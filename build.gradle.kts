@@ -120,8 +120,7 @@ intellijPlatform {
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
-    headerParserRegex = """(\d+\.\d+(?:\.\d+)*)""".toRegex()
-    outputFile = file("build/release-note.txt")
+    groups.empty()
     introduction =
         """
         Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrains IDE插件版，旨在随时随地在IDE中进行阅读。比如：
@@ -148,19 +147,6 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = "21"
         targetCompatibility = "21"
-    }
-
-    patchPluginXml {
-        sinceBuild.set(providers.gradleProperty("pluginSinceBuild"))
-        changeNotes = provider {
-            changelog.renderItem(
-                changelog
-                    .getUnreleased()
-                    .withHeader(false)
-                    .withEmptySections(false),
-                Changelog.OutputType.HTML
-            )
-        }
     }
 
     wrapper {
