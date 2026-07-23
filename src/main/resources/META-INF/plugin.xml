@@ -61,6 +61,14 @@
             <mouse-shortcut keymap="$default" keystroke="control button142"/>
         </action>
 
+        <!-- 新增：阅读窗口 显示/隐藏 -->
+        <action id="com.nancheung.legado-reader.action.toggleToolWindow"
+                class="com.nancheung.plugins.jetbrains.legadoreader.action.ToggleToolWindowAction"
+                text="阅读窗口 显示/隐藏"
+                description="快捷关闭/打开 Legado Reader 阅读窗口">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
+        </action>
+
         <group id="com.nancheung.legado-reader.bar.textBodyToolbar">
             <action id="com.nancheung.legado-reader.action.backBookshelf" class="com.nancheung.plugins.jetbrains.legadoreader.action.BackBookshelfAction"
                     text="返回书架" icon="/icons/back.svg"/>

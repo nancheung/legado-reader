@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.command.Command;
 import com.nancheung.plugins.jetbrains.legadoreader.command.CommandBus;
 import com.nancheung.plugins.jetbrains.legadoreader.command.CommandType;
-import com.nancheung.plugins.jetbrains.legadoreader.storage.PluginSettingsStorage;
+import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,11 +31,7 @@ public class NextPageAction extends AnAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        // 检查行内模式是否启用
-        boolean enableShowBodyInLine = PluginSettingsStorage.getInstance()
-                .getState().enableShowBodyInLine;
-
-        // 如果行内模式被禁用，则禁用此 Action
-        e.getPresentation().setEnabled(enableShowBodyInLine);
+        // 有分页数据（正在阅读）即可翻页，ToolWindow 和 EditorLine 两种模式通用
+        e.getPresentation().setEnabled(PaginationManager.getInstance().getCurrentPage() != null);
     }
 }

@@ -8,8 +8,12 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
+import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
+import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
+import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSession;
 import com.nancheung.plugins.jetbrains.legadoreader.presentation.toolwindow.styling.TextBodyStyling;
+import com.nancheung.plugins.jetbrains.legadoreader.service.ProgressSyncService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -64,7 +68,11 @@ public class TextBodyPanel extends JBPanel<TextBodyPanel> {
         // 2.1 内容卡片：正文
         textBodyPane = new JTextPane();
         textBodyPane.setEditable(false);
-        textBodyContentPanel.add(new JBScrollPane(textBodyPane), CARD_CONTENT);
+        JBScrollPane scrollPane = new JBScrollPane(textBodyPane);
+        textBodyContentPanel.add(scrollPane, CARD_CONTENT);
+
+        // 滚动阅读时防抖同步章节内位置（首个可见字符的偏移）
+        scrollPane.getViewport().addChangeListener(e -> syncScrollProgress(scrollPane.getViewport()));
 
         // 2.2 错误卡片
         textBodyContentPanel.add(wrapCentered(createErrorLabel()), CARD_ERROR);
@@ -161,6 +169,32 @@ public class TextBodyPanel extends JBPanel<TextBodyPanel> {
      */
     public void requestTextFocus() {
         textBodyPane.requestFocus();
+    }
+
+    /**
+     * 滚动时防抖同步阅读进度
+     * 把视口首个可见字符的文档偏移换算为章节内位置（扣除标题行），交给同步服务防抖处理
+     *
+     * @param viewport 正文滚动视口
+     */
+    private void syncScrollProgress(JViewport viewport) {
+        ReadingSession session = ReadingSessionManager.getInstance().getSession();
+        if (session == null || session.currentContent() == null) {
+            return;
+        }
+
+        int docOffset = textBodyPane.viewToModel2D(new Point(0, viewport.getViewPosition().y));
+        if (docOffset < 0) {
+            return;
+        }
+
+        // 正文文档 = 标题 + "\n" + 章节内容，换算回章节内偏移
+        BookChapterDTO chapter = session.getCurrentChapter();
+        String title = chapter != null ? chapter.getTitle() : null;
+        int titleLength = (title != null && !title.isEmpty()) ? title.length() + 1 : 0;
+        int position = Math.max(0, docOffset - titleLength);
+
+        ProgressSyncService.getInstance().scheduleSyncCurrentPosition(position);
     }
 
     // ==================== 样式操作方法 ====================
