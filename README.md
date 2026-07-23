@@ -1,4 +1,4 @@
-![legado-reader](https://img.shields.io/badge/legado%20reader-v1.5.1-green.svg)
+![legado-reader](https://img.shields.io/badge/legado%20reader-v1.6.0-green.svg)
 ![language top](https://img.shields.io/github/languages/top/nancheung/legado-reader?color=orange)
 ![github stars](https://img.shields.io/github/stars/nancheung/legado-reader)
 ![platform](https://img.shields.io/badge/platform-JetBrains%20IDE-lightgrey)
@@ -83,6 +83,7 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 | 行内模式 显示/隐藏 | 切换行内阅读模式的显示状态 | 鼠标中键双击          |
 | 上一页 | 阅读上一页内容 | Ctrl + 鼠标滚轮上    |
 | 下一页 | 阅读下一页内容 | Ctrl + 鼠标滚轮下    |
+| 阅读窗口 显示/隐藏 | 快速显示/隐藏阅读工具窗口 | Alt + D         |
 
 
 ## 使用服务器版阅读([hectorqin/reader](https://github.com/hectorqin/reader)) / 使用`Replit` 免费部署服务版([wy580477/reader-replit](https://github.com/wy580477/reader-replit))
