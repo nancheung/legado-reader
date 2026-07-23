@@ -66,8 +66,9 @@ UI 订阅者（MainReaderPanel、EditorLineReaderService）响应事件更新界
 - `PaginationEvent`：PAGE_CHANGED / PAGE_NAVIGATION_FAILED（翻到边界也发事件）
 - `BookshelfEvent`：LOADING / LOADED / LOAD_FAILED
 - `SettingsChangedEvent`：设置保存时发布（FONT_SETTINGS / DISPLAY_SETTINGS / ALL_SETTINGS）
+- `ProgressSyncEvent`：进度同步状态（SYNCING / SYNCED / SYNC_FAILED），由 `ProgressSyncService` 发布，正文面板顶部展示提示
 
-**UI 组件不要手动订阅 MessageBus**——继承 `presentation.common.UIEventSubscriber` 并按需重写 `onReadingEvent` / `onPaginationEvent` / `onBookshelfEvent` / `onSettingsChangedEvent` 即可。基类在构造函数中完成订阅，并保证回调在 EDT 线程执行（内部已 `invokeLater` + 异常兜底）。
+**UI 组件不要手动订阅 MessageBus**——继承 `presentation.common.UIEventSubscriber` 并按需重写 `onReadingEvent` / `onPaginationEvent` / `onBookshelfEvent` / `onSettingsChangedEvent` / `onProgressSyncEvent` 即可。基类在构造函数中完成订阅，并保证回调在 EDT 线程执行（内部已 `invokeLater` + 异常兜底）。
 
 ### 状态机（service 包）
 

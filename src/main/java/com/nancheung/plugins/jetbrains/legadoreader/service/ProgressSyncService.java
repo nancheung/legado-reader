@@ -6,6 +6,8 @@ import com.intellij.openapi.components.Service;
 import com.nancheung.plugins.jetbrains.legadoreader.api.ApiUtil;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookDTO;
+import com.nancheung.plugins.jetbrains.legadoreader.event.EventPublisher;
+import com.nancheung.plugins.jetbrains.legadoreader.event.ProgressSyncEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSession;
 import lombok.extern.slf4j.Slf4j;
@@ -87,6 +89,12 @@ public final class ProgressSyncService implements Disposable {
             return;
         }
 
+        // 首次调度时发布"同步中"事件（已有待同步任务时不重复发布，避免滚动时刷屏）
+        boolean hadPending = pendingFuture != null;
+        if (!hadPending) {
+            EventPublisher.getInstance().publish(ProgressSyncEvent.syncing());
+        }
+
         // 取消未执行的旧任务
         if (pendingFuture != null) {
             pendingFuture.cancel(false);
@@ -134,9 +142,11 @@ public final class ProgressSyncService implements Disposable {
             ApiUtil.saveBookProgress(book.getBookUrl(), book.getAuthor(), book.getName(),
                     chapterIndex, chapterTitle, position);
             log.info("同步页内阅读进度成功：{} - {} - 位置 {}", book.getName(), chapterTitle, position);
+            EventPublisher.getInstance().publish(ProgressSyncEvent.synced());
         } catch (Exception e) {
             // 忽略同步失败，不影响阅读体验
             log.warn("同步页内阅读进度失败", e);
+            EventPublisher.getInstance().publish(ProgressSyncEvent.syncFailed());
         }
     }
 

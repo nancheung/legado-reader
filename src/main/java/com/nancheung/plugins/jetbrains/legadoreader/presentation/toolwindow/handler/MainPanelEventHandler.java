@@ -2,6 +2,7 @@ package com.nancheung.plugins.jetbrains.legadoreader.presentation.toolwindow.han
 
 import com.intellij.ui.JBColor;
 import com.nancheung.plugins.jetbrains.legadoreader.event.PaginationEvent;
+import com.nancheung.plugins.jetbrains.legadoreader.event.ProgressSyncEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.SettingsChangedEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
@@ -115,6 +116,23 @@ public class MainPanelEventHandler {
     }
 
     /**
+     * 处理进度同步事件
+     * 在正文面板顶部右侧展示同步状态提示
+     */
+    public void handleProgressSyncEvent(ProgressSyncEvent event) {
+        // 正文面板不可见时跳过（用户可能已回到书架）
+        if (!textBodyPanel.isContentVisible()) {
+            return;
+        }
+
+        switch (event.status()) {
+            case SYNCING -> textBodyPanel.showSyncStatus("进度同步中…", 0);
+            case SYNCED -> textBodyPanel.showSyncStatus("进度已同步", 3000);
+            case SYNC_FAILED -> textBodyPanel.showSyncStatus("进度同步失败", 5000);
+        }
+    }
+
+    /**
      * 处理设置变更事件
      * 当用户在设置页面保存字体设置后，立即刷新 UI
      */
@@ -222,7 +240,8 @@ public class MainPanelEventHandler {
         currentState = UIState.INITIALIZED;
         log.info("会话结束，返回书架");
 
-        // 显示书架面板
+        // 刷新并显示书架面板
+        bookshelfPanel.refreshBookshelf();
         mainPanel.showBookshelfPanel();
 
         // 清空正文内容

@@ -9,6 +9,9 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.nancheung.plugins.jetbrains.legadoreader.api.dto.BookChapterDTO;
+import com.nancheung.plugins.jetbrains.legadoreader.command.Command;
+import com.nancheung.plugins.jetbrains.legadoreader.command.CommandBus;
+import com.nancheung.plugins.jetbrains.legadoreader.command.CommandType;
 import com.nancheung.plugins.jetbrains.legadoreader.common.Constant;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import com.nancheung.plugins.jetbrains.legadoreader.model.ReadingSession;
@@ -42,6 +45,12 @@ public class TextBodyPanel extends JBPanel<TextBodyPanel> {
     private final JTextPane textBodyPane;
     private final JBPanel<?> textBodyContentPanel;
     private final CardLayout textBodyContentLayout;
+    private final JBLabel syncStatusLabel;
+
+    /**
+     * 同步状态提示自动隐藏计时器
+     */
+    private Timer syncStatusHideTimer;
 
     // ==================== 样式管理器 ====================
     private final TextBodyStyling textBodyStyling;
@@ -59,7 +68,17 @@ public class TextBodyPanel extends JBPanel<TextBodyPanel> {
 
         JComponent toolbarComponent = actionToolbar.getComponent();
         toolbarComponent.setBorder(JBUI.Borders.empty());
-        this.add(toolbarComponent, BorderLayout.NORTH);
+
+        // 顶部：工具栏 + 右侧同步状态提示
+        syncStatusLabel = new JBLabel();
+        syncStatusLabel.setForeground(JBColor.GRAY);
+        syncStatusLabel.setBorder(JBUI.Borders.emptyRight(8));
+        syncStatusLabel.setVisible(false);
+
+        JBPanel<?> topPanel = new JBPanel<>(new BorderLayout());
+        topPanel.add(toolbarComponent, BorderLayout.CENTER);
+        topPanel.add(syncStatusLabel, BorderLayout.EAST);
+        this.add(topPanel, BorderLayout.NORTH);
 
         // 2. 中央内容区（使用 CardLayout）
         textBodyContentLayout = new CardLayout();
@@ -74,8 +93,8 @@ public class TextBodyPanel extends JBPanel<TextBodyPanel> {
         // 滚动阅读时防抖同步章节内位置（首个可见字符的偏移）
         scrollPane.getViewport().addChangeListener(e -> syncScrollProgress(scrollPane.getViewport()));
 
-        // 2.2 错误卡片
-        textBodyContentPanel.add(wrapCentered(createErrorLabel()), CARD_ERROR);
+        // 2.2 错误卡片（右上角提供退出阅读按钮，加载失败时仍可返回书架）
+        textBodyContentPanel.add(createErrorPanel(), CARD_ERROR);
 
         this.add(textBodyContentPanel, BorderLayout.CENTER);
 
@@ -103,6 +122,25 @@ public class TextBodyPanel extends JBPanel<TextBodyPanel> {
         JBPanel<?> wrapper = new JBPanel<>(new GridBagLayout());
         wrapper.add(component);
         return wrapper;
+    }
+
+    /**
+     * 创建错误卡片面板
+     * 右上角提供"退出阅读"按钮，中央为错误提示
+     */
+    private JBPanel<?> createErrorPanel() {
+        JBPanel<?> errorPanel = new JBPanel<>(new BorderLayout());
+
+        JButton exitButton = new JButton("退出阅读");
+        exitButton.addActionListener(e ->
+                CommandBus.getInstance().dispatchAsync(Command.of(CommandType.BACK_TO_BOOKSHELF)));
+
+        JBPanel<?> buttonBar = new JBPanel<>(new FlowLayout(FlowLayout.RIGHT));
+        buttonBar.add(exitButton);
+
+        errorPanel.add(buttonBar, BorderLayout.NORTH);
+        errorPanel.add(wrapCentered(createErrorLabel()), BorderLayout.CENTER);
+        return errorPanel;
     }
 
     // ==================== 状态切换方法 ====================
@@ -169,6 +207,28 @@ public class TextBodyPanel extends JBPanel<TextBodyPanel> {
      */
     public void requestTextFocus() {
         textBodyPane.requestFocus();
+    }
+
+    /**
+     * 显示同步状态提示（顶部右侧）
+     *
+     * @param text       提示文本
+     * @param autoHideMs 自动隐藏延迟（毫秒），小于等于 0 表示不自动隐藏
+     */
+    public void showSyncStatus(String text, int autoHideMs) {
+        if (syncStatusHideTimer != null) {
+            syncStatusHideTimer.stop();
+            syncStatusHideTimer = null;
+        }
+
+        syncStatusLabel.setText(text);
+        syncStatusLabel.setVisible(true);
+
+        if (autoHideMs > 0) {
+            syncStatusHideTimer = new Timer(autoHideMs, e -> syncStatusLabel.setVisible(false));
+            syncStatusHideTimer.setRepeats(false);
+            syncStatusHideTimer.start();
+        }
     }
 
     /**
