@@ -71,10 +71,17 @@ public class ApiUtil {
     }
 
     /**
-     * 保存阅读进度
+     * 保存阅读进度（书籍地址取当前会话）
      */
     public void saveBookProgress(String author, String name, int index, String title, int durChapterPos) {
-        // 调用 API获取书架目录
+        saveBookProgress(ReadingSessionManager.getInstance().getCurrentBook().getBookUrl(),
+                author, name, index, title, durChapterPos);
+    }
+
+    /**
+     * 保存阅读进度（显式指定书籍地址，供延迟同步等不依赖会话状态的场景使用）
+     */
+    public void saveBookProgress(String bookUrl, String author, String name, int index, String title, int durChapterPos) {
         String url = AddressHistoryStorage.getInstance().getMostRecent() + AddressEnum.SAVE_BOOK_PROGRESS.getAddress();
 
         BookProgressDTO bookProgressDTO = BookProgressDTO.builder()
@@ -84,7 +91,7 @@ public class ApiUtil {
                 .durChapterTitle(title)
                 .durChapterTime(System.currentTimeMillis())
                 .durChapterPos(durChapterPos)
-                .url(ReadingSessionManager.getInstance().getCurrentBook().getBookUrl())
+                .url(bookUrl)
                 .index(index)
                 .build();
 

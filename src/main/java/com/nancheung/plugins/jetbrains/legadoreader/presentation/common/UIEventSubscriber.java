@@ -58,6 +58,7 @@ public abstract class UIEventSubscriber implements ReaderEventListener {
             case ReadingEvent e -> onReadingEvent(e);
             case PaginationEvent e -> onPaginationEvent(e);
             case SettingsChangedEvent e -> onSettingsChangedEvent(e);
+            case ProgressSyncEvent e -> onProgressSyncEvent(e);
         }
     }
 
@@ -98,6 +99,16 @@ public abstract class UIEventSubscriber implements ReaderEventListener {
      * @param event 设置变更事件
      */
     protected void onSettingsChangedEvent(SettingsChangedEvent event) {
+        // 子类可选择性重写
+    }
+
+    /**
+     * 处理进度同步事件
+     * 用于展示同步状态提示
+     *
+     * @param event 进度同步事件
+     */
+    protected void onProgressSyncEvent(ProgressSyncEvent event) {
         // 子类可选择性重写
     }
 }

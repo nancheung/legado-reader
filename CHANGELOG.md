@@ -9,6 +9,20 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 ## [Unreleased]
 
 
+## [1.6.0] - 2026-07-23
+
+### Added
+
+- :sparkles: feat: **同步章节内阅读进度**，正文滚动、翻页时防抖同步位置到阅读APP/服务器，退出阅读时立即同步
+- :sparkles: feat: 新增快捷键 `Alt+D` 快速显示/隐藏阅读窗口，可在 Keymap 中自定义
+- :sparkles: feat: 正文顶部新增同步状态提示（进度同步中…/进度已同步/进度同步失败）
+- :sparkles: feat: 加载失败页面右上角新增"退出阅读"按钮，服务连接异常时也可返回书架
+
+### Fixed
+
+- :bug: fix: 行内模式关闭时，Ctrl+滚轮翻页在阅读窗口中不可用
+- :bug: fix: 工具栏"返回书架"按钮绕过指令链路，退出阅读时进度未同步、会话未清理
+
 ## [1.5.1] - 2025-12-25
 
 ### Added
@@ -44,6 +58,7 @@ Legado Reader是 [开源阅读APP](https://github.com/gedoor/legado) 的Jetbrain
 - refactor: 重构数据层 (fd214fb)
 - refactor: 彻底移除 CurrentReadData 并改用 ReadingSessionManager (438d047)
 
-[Unreleased]: https://github.com/nancheung/legado-reader/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/nancheung/legado-reader/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/nancheung/legado-reader/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/nancheung/legado-reader/compare/v1.4.1...v1.5.1
 [1.5.0]: https://github.com/nancheung/legado-reader/commits/v1.5.0

@@ -7,6 +7,7 @@ import com.nancheung.plugins.jetbrains.legadoreader.event.EventPublisher;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.manager.ReadingSessionManager;
 import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
+import com.nancheung.plugins.jetbrains.legadoreader.service.ProgressSyncService;
 import com.nancheung.plugins.jetbrains.legadoreader.service.ReadingSessionStateMachine;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +33,9 @@ public class BackToBookshelfHandler implements CommandHandler<CommandPayload> {
         EventPublisher publisher = EventPublisher.getInstance();
 
         log.info("返回书架，结束阅读会话");
+
+        // 0. 立即执行待同步的阅读进度，保证退出阅读时最后位置不丢失
+        ProgressSyncService.getInstance().flush();
 
         // 1. 发布会话结束事件
         publisher.publish(ReadingEvent.sessionEnded(command.id()));

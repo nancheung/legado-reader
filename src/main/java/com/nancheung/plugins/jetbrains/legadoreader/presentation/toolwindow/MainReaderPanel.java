@@ -8,6 +8,7 @@ import com.nancheung.plugins.jetbrains.legadoreader.command.CommandBus;
 import com.nancheung.plugins.jetbrains.legadoreader.command.CommandType;
 import com.nancheung.plugins.jetbrains.legadoreader.command.payload.SelectBookPayload;
 import com.nancheung.plugins.jetbrains.legadoreader.event.PaginationEvent;
+import com.nancheung.plugins.jetbrains.legadoreader.event.ProgressSyncEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.ReadingEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.event.SettingsChangedEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.presentation.common.UIEventSubscriber;
@@ -159,5 +160,13 @@ public class MainReaderPanel extends UIEventSubscriber {
     @Override
     protected void onSettingsChangedEvent(SettingsChangedEvent event) {
         eventHandler.handleSettingsChangedEvent(event);
+    }
+
+    /**
+     * 重写父类方法：处理进度同步事件
+     */
+    @Override
+    protected void onProgressSyncEvent(ProgressSyncEvent event) {
+        eventHandler.handleProgressSyncEvent(event);
     }
 }

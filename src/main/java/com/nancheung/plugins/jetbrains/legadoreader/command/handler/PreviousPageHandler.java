@@ -8,6 +8,7 @@ import com.nancheung.plugins.jetbrains.legadoreader.event.EventPublisher;
 import com.nancheung.plugins.jetbrains.legadoreader.event.PaginationEvent;
 import com.nancheung.plugins.jetbrains.legadoreader.service.IPaginationManager;
 import com.nancheung.plugins.jetbrains.legadoreader.service.PaginationManager;
+import com.nancheung.plugins.jetbrains.legadoreader.service.ProgressSyncService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -50,6 +51,9 @@ public class PreviousPageHandler implements CommandHandler<CommandPayload> {
                         prevPage.content()
                 ));
                 log.debug("翻到上一页: {}/{}", prevPage.pageIndex() + 1, totalPages);
+
+                // 防抖同步页内阅读位置到服务器
+                ProgressSyncService.getInstance().scheduleSyncCurrentPosition(prevPage.startPos());
             }
 
         } else {
